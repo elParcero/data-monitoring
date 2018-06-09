@@ -1,0 +1,7 @@
+#device name, device quantity
+pba1_adc7: i0
+pba2_adc6: ir
+pba1_adc1: it
+pb9_enc1: hhm_theta
+pba1_adc6: iff
+pba2_adc7: pba2_adc7

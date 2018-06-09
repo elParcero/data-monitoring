@@ -1,0 +1,8 @@
+#device name, filename
+an_82ec23: pba2_adc6 
+an_8a28f9: pba1_adc1
+an_ce59fc: pba1_adc6
+en_282932: pb9_enc1
+an_2f218f: pba1_adc7
+an_e53ba8: pba2_adc7
+
