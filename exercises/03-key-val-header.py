@@ -11,9 +11,7 @@
 
 def get_header(file_name):
 	hdr_data = {}
-	column_names = []
 	key_value = []
-	info_data = []
 
 	#opens file and reads each line, extracting key and value pair if line starts with '#'
 	with open(file_name) as file:
@@ -26,9 +24,6 @@ def get_header(file_name):
 						value = key_value[1].replace("\n","").strip()
 						hdr_data[key] = value
 					elif len(key_value) == 1:
-						column_names = line.replace("#","").strip().split()
-						continue
-			if not line.startswith("#"):
-				info_data.append(line.strip().split())	
+						continue	
 
 	return hdr_data
