@@ -36,18 +36,28 @@ with open(file_name) as file:
 			info_data.append(line.strip().split())	
 
 #printing dictionary and list to make sure values are in place
+print("Header Data")
 print(hdr_data)
+print("\nColumn Names")
 print(column_names)
-
 
 #creating a pandas dataframe from the data in the text file
 df = pd.DataFrame(info_data)
 df.columns = column_names
+print("\nData Frame")
 print(df)
 
+# columns in df object are of Series type, following lines convert it and i0 columns to ndarray with float type values
+it_data = np.array(df.it, dtype="float")
+i0_data = np.array(df.i0, dtype="float")
+
 #plotting
+plt.ion()
 plt.figure(0)
 plt.clf()
-
-np.log(df.it/df.i0)
-
+plt.plot(np.log(it_data/i0_data), color='#be0119')  #scarlet color
+plt.xlabel('Scan Number')
+plt.ylabel('log(it) / log(i0)')
+plt.title("XAS_DATA")
+plt.grid(True)
+plt.show()
