@@ -1,5 +1,5 @@
 '''
-    Exercise 4 b)
+    Exercise 6
     Can you now turn your result from exercise 4 into an object?
 
     The idea is to run:
@@ -7,6 +7,12 @@
     # get the 10th chunk of 1024 rows as a pandas dataframe
     row = myreader(10)
 
+    1. file handler
+    2. get_file_list
+    3. get_file_sizes
+
+    When we read files using databroker, we're basically using objects like
+    this to open and close the files for us. More on that later.
 
 '''
 
