@@ -53,27 +53,26 @@
             Bonus: Try to do this by reading the files devnames.txt
                 rather than by hand. (But don't worry if it's too tedious)
 
+    Another hint:
+        Try to see if you can use:
+            pd.read_csv to read the files
+            and try to see if you can use "apply" to apply a transformation to
+            a file
+
+            for example:
+                df['encoder'] = df['encoder'].apply(enc2counts)
+
 '''
+import pandas as pd
+import numpy as np
 
 def time2totaltime(time_s, time_ns):
     return time_s + time_ns*1e-9
 
-def adcs2counts(adcs):
-    ''' Convert adcs to counts
-    '''
-    # allocate array of zeroes
-    counts = np.zeros(len(adcs))
-
-    # go through each adc
-    for i in range(len(adcs)):
-        adc = adcs[i]
-        shifted_adc = adc >> 8
-        if shifted_adc > 0x1FFFF:
-            count = (shifted_adc) - 0x40000
-        else:
-            count = (shifted_adc)*7.62939453125e-05
-
-    return counts
+fc = 7.62939453125e-05
+adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
+        if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
+enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
 
 def encoder2energy(encoder, pulses_per_deg=36000, offset = 0):
