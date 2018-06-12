@@ -17,10 +17,10 @@
 '''
 
 class ANReader:
-    def __init__(self, filepath, chunk_size=1024):
+    def __init__(self, resource_path, chunk_size=1024):
         # load the file or save the filepath
         pass
 
-    def __call__(self, chunk_number):
+    def __call__(self, chunk_num):
         # grab the nth chunk where the data is read in chunk_size size rows
         return result
