@@ -181,4 +181,3 @@ new_en_dfs = manipulate_en_df(en_df)
 
 # creating a dictionary with key: device names , value: device quantity
 devnames = dev_names(dev_names_path)
-print(devnames)
