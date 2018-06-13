@@ -122,6 +122,13 @@ def dev_names(dev_names_path):
 					dev_names[temp_split[0].strip()] = temp_split[1].strip()
 	return dev_names
 
+def manipulate_en_df(en_df):
+	en_df_new = []
+	for df in en_df:
+		new_en_df = df[['total time (s)' , 'energy']].copy()	
+		en_df_new.append(new_en_df)
+	return en_df_new
+	
 directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data"
 dev_names_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/devnames.txt"
 
@@ -168,13 +175,6 @@ new_an_df = new_an_dfs(an_df)
 # dictionary contains key=filename which maps to value=dataframe object
 # en_df is a list of dataframes from en files read in
 en_files_dict, en_df = en_files_to_dict(en_files_only)
-
-def manipulate_en_df(en_df):
-	en_df_new = []
-	for df in en_df:
-		new_en_df = df[['total time (s)' , 'energy']].copy()	
-		en_df_new.append(new_en_df)
-	return en_df_new
 
 # new list that holds dataframes from en files with 'total time (s)' and 'energy' columns only
 new_en_dfs = manipulate_en_df(en_df)
