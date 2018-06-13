@@ -6,6 +6,16 @@ import numpy as np
 import os
 import pandas as pd
 
+'''
+Some helper functions. We don't have to worry about the details.
+These are hardware level details.
+Use these to apply to the 'counts' column for an files etc
+'''
+fc = 7.62939453125e-05
+adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
+        if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
+enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
+
 directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data"
 
 '''
@@ -22,7 +32,7 @@ en_files_only = [file for file in files_only if file.startswith("en_")]
 #all files without .txt extension
 raw_files = [key for key in files_only if not key.endswith(".txt")]
 
-# we will now read in all files into an array
+# we will now read in data from all files into an array
 # and store that array in a list of files readin
 raw_files_read_in = []
 index = 0
@@ -43,7 +53,6 @@ for index in range(len(file_in_dir)):
 outer_index = 0
 inner_index = 0
 time = 0.0
-times = []
 temp_total_time = []
 time2totaltime = []
 
@@ -84,17 +93,12 @@ index = 0
 
 for file in an_files_only:
 	an_df = pd.read_csv((directory_string + "/" + an_files_only[index]) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
+	an_df['volts'] = an_df['counts'].apply(adc2counts)
 	an_df['total time (s)'] = an_df['time (s)'] + 1e-9*an_df['time (ns)']
+	#an_df['counts'] = an_df['counts'].apply(adc2counts)
 	an_data[file] = an_df
 	index += 1
 
-# will convert counts 
-fc = 7.62939453125e-05
-adc2counts = lambda x: ((int(x,16) >> 8) - 0x40000) * fc \
-				if (int(x,16) >> 8) > 0x1FFFF else (int(x,16) >> 8) * fc
-				
-an_df['counts'] = an_df['counts'].apply(adc2counts)
-#print(an_df)
 
 new_an_df = an_df[['total time (s)' , 'counts']].copy()
 #print(new_an_df)
@@ -110,15 +114,13 @@ for file in en_files_only:
 	en_data[file] = en_df
 	index += 1
 
-def encoder2energy(encoder, pulses_per_deg=36000, offset=0.09833571377062045):
-	return -12400 / (2 * 3.1356 * np.sin(np.deg2rad((encoder/pulses_per_deg) - float(offset))))
 
-encoder_to_energy = encoder2energy(en_df['encoder'])
+encoder_to_energy = en_df['encoder'].apply(enc2counts)
 en_df['energy'] = encoder_to_energy
 #print(en_df)
 
 new_en_df = en_df[['total time (s)' , 'energy']].copy()
-print(new_en_df)
+#print(new_en_df)
 
 # creating a dictionary with key: device names , value: device quantity
 dev_names = dict()
@@ -131,4 +133,5 @@ with open(dev_names_path) as file:
 				dev_names[temp_split[0].strip()] = temp_split[1].strip()
 
 print(dev_names)
+print('\n')
 
