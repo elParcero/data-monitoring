@@ -14,26 +14,26 @@ import pandas as pd
 
 class ANREADER:
 	def __init__(self, resource_path, chunk_size = 1024):
-		#num_of_lines = len(open(resource_path).readlines())
-		#num_of_chunks = int( num_of_lines / chunk_size )
-		#num_of_remaining_chunk = num_of_lines % chunk_size
+		global chunks_of_data
 		chunks_of_data = []
-		
-		index = 0
 
-		for chunk in pd.read_csv(resource_path, chunksize=chunk_size):
-			print(chunk)
-			print(index)
-			index += 1
+		for chunk in pd.read_csv(resource_path, chunksize=chunk_size, header=None):
+			chunks_of_data.append(chunk)
 		
+		print('There are {} chunks in this data set.'.format(len(chunks_of_data)))
 		pass
 
 	def __call__(self, chunk_num):
-		print(chunk_num)
+		result = chunks_of_data[chunk_num]
 		return result
 
 
-file_path = directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data"
+file_path = "/Users/jdiaz/data-monitoring/data/iss_sample_data"
+file_name = "/an_2f218f"
 
+myreader = ANREADER(file_path + file_name, chunk_size=1024)
 
-myreader = ANREADER(file_path + "/an_2f218f", chunk_size=1024)
+# get the 10th chunk
+# dataframe is returned
+new = myreader(10)
+
