@@ -2,7 +2,6 @@
 Author: Jorge Diaz Jr
 Exercise 3
 '''
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +9,14 @@ import numpy as np
 file_path = "/home/jdiaz/projects/data-monitoring/data/xas_data/xas_test_328.txt"
 
 def get_header(file_path):
+	'''
+	Open file , reads file in, splits line apart if it starts with #, 
+	one piece is the key, the other piece is the value
+	e.g. # Year: 2018
+	gets stored in a dictionary such that hdr_dict['Year'] = '2018'
+	returns the dictionary hdr_data, and returns a list of all the lines
+	such that the lines do NOT start with # symbol
+	'''
 	hdr_data = {}
 	key_value = []
 	info_data = []
@@ -32,6 +39,11 @@ def get_header(file_path):
 	return hdr_data, info_data
 
 def get_column_names(file_path):
+	'''
+	argument in function is file path
+	this function reads the lines to extract
+	column names and returns them as a list
+	'''
 	column_names = []
 	with open(file_path) as file:
 		for line in file:
@@ -44,28 +56,38 @@ def get_column_names(file_path):
 	return column_names
 
 def create_df(info_data, column_names):
+	'''
+	the list made up of lines is passed in as well as column names
+	creates a dataframe object and returns it
+	'''
 	df = pd.DataFrame(info_data)
 	df.columns = column_names
 	print("\nData Frame")
 	print(df)
 	return df 
 
-def plot_log_it_i0(it_data, i0_data):
+def plot_log_i0_it(i0_data, it_data):
+	'''
+	plotting log(i0_data / it_data)
+	'''
 	plt.figure(0)
 	plt.clf()
-	plt.plot(np.log(it_data/i0_data), color='#be0119')  #scarlet color
+	plt.plot(np.log(i0_data/it_data), color='#be0119')  #scarlet color
 	plt.xlabel('Scan Number')
-	plt.ylabel('log(it) / log(i0)')
+	plt.ylabel('log(i0) / log(it)')
 	plt.title("XAS_DATA")
 	plt.grid(True)
 	plt.show()
 
-def plot_versus_energy(it_data, i0_data, energy_data):
+def plot_versus_energy(i0_data, it_data, energy_data):
+	'''
+	plotting log(i0_data / it_data) vs energy where energy will be x-axis
+	'''
 	plt.figure(1)
 	plt.clf()
-	plt.plot(energy_data, np.log(it_data/i0_data), color='#be0119')  #scarlet color
+	plt.plot(energy_data, np.log(i0_data/it_data), color='#be0119')  #scarlet color
 	plt.xlabel('energy (keV)')
-	plt.ylabel('log(it) / log(i0)')
+	plt.ylabel('log(i0) / log(it)')
 	plt.title("XAS_DATA")
 	plt.grid(True)
 	plt.show()
@@ -92,8 +114,8 @@ energy_data = np.array(df.energy, dtype="float")
 
 plt.ion()
 
-# plotting np.log(it_data / i0_data)
-plot_log_it_i0(it_data, i0_data)
+# plotting np.log(i0_data/it_data)
+plot_log_i0_it(i0_data , it_data)
 
-#plotting versus energy
-plot_versus_energy(it_data, i0_data, energy_data)
+#plotting versus energy with log
+plot_versus_energy(i0_data, it_data, energy_data)
