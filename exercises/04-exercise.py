@@ -65,23 +65,11 @@ def total_time(an_files_only, directory_string):
 				time_in_sec = read_an_file[inner_index][0] #gets time in sec
 				time_in_nanosec = read_an_file[inner_index][1]#gets time for nanosec
 				temp_total_time.append(time_in_sec + time_in_nanosec*1e-9)#sums to total time
-				inner_index += 1 #move to next row
 		time2totaltime.append(temp_total_time)
 		temp_total_time = []
 
 	return time2totaltime
 
-def sum_times(time2totaltime):
-	'''
-	for each raw file read in that has the two columns of time
-	summed up already, sum up the entire column of time2totaltime(list)
-	for each file read in
-	'''
-	sum_of_time = []
-	for time in time2totaltime:
-		sum_of_time.append(np.sum(time))
-
-	return sum_of_time
 
 def print_sum_of_time(sum_of_time):
 	'''
@@ -92,6 +80,17 @@ def print_sum_of_time(sum_of_time):
 	print('\n')
 
 
+def an_file_to_dict(file_name):
+	'''
+	creating a data frame for specified file name
+	and returns a dataframe that will get stored in a dictionary
+	'''
+	an_df = pd.read_csv((directory_string + "/" + file_name) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
+	an_df['volts'] = an_df['counts'].apply(adc2counts)
+	an_df['total time (s)'] = an_df['time (s)'] + 1e-9*an_df['time (ns)']
+	return an_df
+
+
 def an_files_to_dict(an_files_only):
 	'''
 	creates a dictionary in which key = filename and the value = dataframe
@@ -100,11 +99,7 @@ def an_files_to_dict(an_files_only):
 	an_data = dict()
 	temp_df = []
 	for file_name in an_files_only:
-		an_df = pd.read_csv((directory_string + "/" + file_name) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
-		an_df['volts'] = an_df['counts'].apply(adc2counts)
-		an_df['total time (s)'] = an_df['time (s)'] + 1e-9*an_df['time (ns)']
-		an_data[file_name] = an_df
-
+		an_data[file_name] = an_file_to_dict(file_name)
 		temp_df.append(an_df)
 		
 	return an_data, temp_df
@@ -193,14 +188,6 @@ print_size_files(file_read_in_dir, raw_files)
 
 #list that holds the sum of time in each row of each file
 time2totaltime = total_time(an_files_only, directory_string)
-
-#we sum up all the elements(times) in individual array and store in a list 
-sum_of_time = sum_times(time2totaltime)
-
-#convert list to ndarray
-sum_of_time = np.asarray(sum_of_time)
-print('\n')
-print_sum_of_time(sum_of_time)
 
 # creating dictionary such that keys = filename, values = pandas dataframe
 an_files_dict, an_df = an_files_to_dict(an_files_only)
