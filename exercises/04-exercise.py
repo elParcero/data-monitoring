@@ -97,18 +97,16 @@ def an_files_to_dict(an_files_only):
 	creates a dictionary in which key = filename and the value = dataframe
 	associated with that specific file
 	'''
-	index = 0
 	an_data = dict()
 	temp_df = []
-	for file in an_files_only:
-		an_df = pd.read_csv((directory_string + "/" + an_files_only[index]) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
+	for file_name in an_files_only:
+		an_df = pd.read_csv((directory_string + "/" + file_name) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
 		an_df['volts'] = an_df['counts'].apply(adc2counts)
 		an_df['total time (s)'] = an_df['time (s)'] + 1e-9*an_df['time (ns)']
-		an_data[file] = an_df
+		an_data[file_name] = an_df
 
 		temp_df.append(an_df)
-		index += 1
-
+		
 	return an_data, temp_df
 
 def new_an_dfs(an_df):
@@ -129,17 +127,16 @@ def en_files_to_dict(en_files_only):
 	associated with that specific file
 	returns en_dictionary and dataframes(stored in list) for each file
 	'''
-	index = 0
 	en_data = dict()
 	temp_df = []
-	for file in en_files_only:
-		en_df = pd.read_csv(directory_string + "/" + en_files_only[index], delimiter=" ", names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], header = None)
+	for file_name in en_files_only:
+		en_df = pd.read_csv(directory_string + "/" + file_name, delimiter=" ", names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], header = None)
 		en_df['total time (s)'] = en_df['time (s)'] + 1e-9 * en_df['time (ns)']
 		encoder_to_energy = en_df['encoder'].apply(enc2counts)
 		en_df['energy'] = encoder_to_energy
-		en_data[file] = en_df
+		en_data[file_name] = en_df
 		temp_df.append(en_df)
-		index += 1
+		
 	return en_data, temp_df
 
 def dev_names(dev_names_path):
