@@ -26,8 +26,7 @@ class ANREADER:
 		self.chunks_of_data = []
 		for chunk in pd.read_csv(resource_path, chunksize=chunk_size, header=None):
 			self.chunks_of_data.append(chunk)	
-		pass
-
+		
 	def __call__(self, chunk_num):
 		'''
 		returns specified chunk number/index from list of all chunks created
@@ -35,12 +34,11 @@ class ANREADER:
 		result = self.chunks_of_data[chunk_num]
 		return result
 
-	def get_chunks(self):
+	def __len__(self):
 		'''
 		returns the number of chunks for specific file
 		'''
-		num_of_chunks = len(self.chunks_of_data)
-		return num_of_chunks
+		return len(self.chunks_of_data)
 
 
 file_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
@@ -68,8 +66,8 @@ def chunk_choice(myreader, file):
 	user will need to enter which chunk number is desired from the data
 	returns chunk choice
 	'''
-	print('There are {0} chunks in {1}.'.format( myreader.get_chunks(),  file))
-	return int(input("Which chunk number will you want, choose between 0 - {}:\nChunk choice: ".format(myreader.get_chunks() - 1)))
+	print('There are {0} chunks in {1}.'.format( len(myreader),  file)) 
+	return int(input("Which chunk number will you want, choose between 0 - {}:\nChunk choice: ".format(len(myreader) - 1)))
 
 # subtracting 1 since indices start at 0
 file_choice = file_choice() - 1
