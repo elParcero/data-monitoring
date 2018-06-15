@@ -69,17 +69,16 @@ def create_df(info_data, column_names):
 	the list made up of lines is passed in as well as column names
 	creates a dataframe object and returns it
 	'''
-	df = pd.DataFrame(info_data)
-	df.columns = column_names
+	df = pd.DataFrame(info_data, columns = column_names)
 	print("\nData Frame")
 	print(df)
 	return df 
 
-def plot_log_i0_it(i0_data, it_data):
+def plot_log_i0_it(i0_data, it_data, figNum = None):
 	'''
 	plotting log(i0_data / it_data)
 	'''
-	plt.figure(0)
+	plt.figure(figNum)
 	plt.clf()
 	plt.plot(np.log(i0_data/it_data), color='#be0119')  #scarlet color
 	plt.xlabel('Scan Number')
@@ -88,11 +87,11 @@ def plot_log_i0_it(i0_data, it_data):
 	plt.grid(True)
 	plt.show()
 
-def plot_versus_energy(i0_data, it_data, energy_data):
+def plot_versus_energy(i0_data, it_data, energy_data, figNum = None):
 	'''
 	plotting log(i0_data / it_data) vs energy where energy will be x-axis
 	'''
-	plt.figure(1)
+	plt.figure(figNum)
 	plt.clf()
 	plt.plot(energy_data, np.log(i0_data/it_data), color='#be0119')  #scarlet color
 	plt.xlabel('energy (keV)')
@@ -131,8 +130,8 @@ if data_desired == 1:
 	i0_data = np.array(df.i0, dtype="float")
 	energy_data = np.array(df.energy, dtype="float")
 	# plotting np.log(i0_data/it_data)
-	plot_log_i0_it(i0_data , it_data)
+	plot_log_i0_it(i0_data , it_data, 0)
 
 	#plotting versus energy with log
-	plot_versus_energy(i0_data, it_data, energy_data)
+	plot_versus_energy(i0_data, it_data, energy_data, 1)
 
