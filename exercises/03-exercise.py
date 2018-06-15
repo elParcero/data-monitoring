@@ -78,6 +78,8 @@ def plot_log_i0_it(i0_data, it_data, figNum = None):
 	'''
 	plotting log(i0_data / it_data)
 	'''
+	if figNum is None:
+		figNum = 0
 	plt.figure(figNum)
 	plt.clf()
 	plt.plot(np.log(i0_data/it_data), color='#be0119')  #scarlet color
@@ -91,6 +93,8 @@ def plot_versus_energy(i0_data, it_data, energy_data, figNum = None):
 	'''
 	plotting log(i0_data / it_data) vs energy where energy will be x-axis
 	'''
+	if figNum is None:
+		figNum = 0
 	plt.figure(figNum)
 	plt.clf()
 	plt.plot(energy_data, np.log(i0_data/it_data), color='#be0119')  #scarlet color
