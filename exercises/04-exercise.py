@@ -24,7 +24,7 @@ def raw_read_in(raw_files):
 	raw_files_read_in = []
 	index = 0
 	for file in raw_files:
-		readin_file = np.loadtxt(directory_string + "/" + raw_files[index])
+		readin_file = np.loadtxt(directory_string + raw_files[index])
 		raw_files_read_in.append(readin_file)
 		index += 1
 	return raw_files_read_in
@@ -45,32 +45,6 @@ def print_size_files(file_read_in_dir, raw_files):
 	for index in range(len(file_read_in_dir)):
 		print(str(raw_files[index]) + " - (Rows, Columns) - "+ str(file_read_in_dir[index].shape))
 
-def total_time(an_files_only, directory_string):
-	'''
-	adding the sum of the time_in_sec AND time_in_nanosec of each ROW to a list
-	once the list reaches the last index, the list is stored in another list that
-	will hold the sum of time, from each row, of x file
-	returns a list of lists, the lists in each index contain the 
-	totaltime of that specific file , 
-	e.g.: time2totaltime[0] = list of totaltime for each row from file associated with this specific index
-	'''
-	time = 0.0
-	temp_total_time = []
-	time2totaltime = []
-
-	for outer_index in range(len(an_files_only)):
-		read_an_file = np.loadtxt(directory_string + "/" + an_files_only[outer_index])
-		for inner_index in range(read_an_file.shape[0]): # less than number of rows in file
-			if inner_index != len(read_an_file): # if inner index != the length or num of elements of file
-				time_in_sec = read_an_file[inner_index][0] #gets time in sec
-				time_in_nanosec = read_an_file[inner_index][1]#gets time for nanosec
-				temp_total_time.append(time_in_sec + time_in_nanosec*1e-9)#sums to total time
-		time2totaltime.append(temp_total_time)
-		temp_total_time = []
-
-	return time2totaltime
-
-
 def print_sum_of_time(sum_of_time):
 	'''
 	prints the total sum of the totaltime column for each file
@@ -80,12 +54,12 @@ def print_sum_of_time(sum_of_time):
 	print('\n')
 
 
-def an_file_to_dict(file_name):
+def read_an_file(file_name):
 	'''
 	creating a data frame for specified file name
 	and returns a dataframe that will get stored in a dictionary
 	'''
-	an_df = pd.read_csv((directory_string + "/" + file_name) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
+	an_df = pd.read_csv((directory_string + file_name) , delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], header = None)
 	an_df['volts'] = an_df['counts'].apply(adc2counts)
 	an_df['total time (s)'] = an_df['time (s)'] + 1e-9*an_df['time (ns)']
 	return an_df
@@ -99,8 +73,8 @@ def an_files_to_dict(an_files_only):
 	an_data = dict()
 	temp_df = []
 	for file_name in an_files_only:
-		an_data[file_name] = an_file_to_dict(file_name)
-		temp_df.append(an_df)
+		an_data[file_name] = read_an_file(file_name)
+		temp_df.append(an_data[file_name])
 		
 	return an_data, temp_df
 
@@ -116,6 +90,17 @@ def new_an_dfs(an_df):
 		new_an_df.append(new_df)
 	return new_an_df
 
+def read_en_file(file_name):
+	'''
+	creating a data frame for specified file name
+	and returns a dataframe that will get stored in a dictionary
+	'''
+	en_df = pd.read_csv(directory_string + file_name, delimiter=" ", names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], header = None)
+	en_df['total time (s)'] = en_df['time (s)'] + 1e-9 * en_df['time (ns)']
+	encoder_to_energy = en_df['encoder'].apply(enc2counts)
+	en_df['energy'] = encoder_to_energy
+	return en_df
+
 def en_files_to_dict(en_files_only):
 	'''
 	creates a dictionary in which key = filename and the value = dataframe
@@ -125,14 +110,22 @@ def en_files_to_dict(en_files_only):
 	en_data = dict()
 	temp_df = []
 	for file_name in en_files_only:
-		en_df = pd.read_csv(directory_string + "/" + file_name, delimiter=" ", names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], header = None)
-		en_df['total time (s)'] = en_df['time (s)'] + 1e-9 * en_df['time (ns)']
-		encoder_to_energy = en_df['encoder'].apply(enc2counts)
-		en_df['energy'] = encoder_to_energy
-		en_data[file_name] = en_df
-		temp_df.append(en_df)
+		en_data[file_name] = read_en_file(file_name)
+		temp_df.append(en_data[file_name])
 		
 	return en_data, temp_df
+
+def new_en_dfs(en_df):
+	'''
+	creating a new dataframe with only two columns
+	col0 = total time (s)- col1 = energy
+	returns a list with the new dataframe from each en_file 
+	'''
+	en_df_new = []
+	for df in en_df:
+		new_en_df = df[['total time (s)' , 'energy']].copy()	
+		en_df_new.append(new_en_df)
+	return en_df_new
 
 def dev_names(dev_names_path):
 	'''
@@ -149,21 +142,38 @@ def dev_names(dev_names_path):
 					dev_names[temp_split[0].strip()] = temp_split[1].strip()
 	return dev_names
 
-def manipulate_en_df(en_df):
+def file_names(file_names_path):
 	'''
-	creating a new dataframe with only two columns
-	col0 = total time (s)- col1 = energy
-	returns a list with the new dataframe from each en_file 
+	reads in a text file and finds the file name along 
+	with the device name 
+	returns a dictionary with >> key = file name , value = device name
 	'''
-	en_df_new = []
-	for df in en_df:
-		new_en_df = df[['total time (s)' , 'energy']].copy()	
-		en_df_new.append(new_en_df)
-	return en_df_new
-	
-directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data"
-dev_names_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/devnames.txt"
+	file_names = dict()
+	with open(file_names_path) as file:
+		for line in file:
+			if not line.startswith('#'):
+				temp_split = line.split(':', 1)
+				if len(temp_split) > 1:
+					file_names[temp_split[0].strip()] = temp_split[1].strip()
+	return file_names
 
+def file_quantity(filenames, devnames):
+	'''
+	arguments are two dictionaries
+	filesnames maps file name to device name
+	devnames maps device name to device quantity
+	returns a dictionary >> key = filename, value = device quantity associated with filename
+	'''
+	file_quantity = dict()
+	for file in filenames:
+		device_name = filenames[file]
+		device_quantity = devnames[device_name] 
+		file_quantity[file] = device_quantity
+	return file_quantity
+	
+directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
+dev_names_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/devnames.txt"
+file_names_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/filenames.txt"
 '''
 going to store each file name in a list
 index 2 indicates that we only want filenames and no directory path or directory names
@@ -186,10 +196,7 @@ raw_files_read_in = raw_read_in(raw_files)
 file_read_in_dir = files_in_dir(raw_files_read_in)
 print_size_files(file_read_in_dir, raw_files)
 
-#list that holds the sum of time in each row of each file
-time2totaltime = total_time(an_files_only, directory_string)
-
-# creating dictionary such that keys = filename, values = pandas dataframe
+# creating dictionary >>> keys = filename, values = pandas dataframe
 an_files_dict, an_df = an_files_to_dict(an_files_only)
 
 # list that holds dataframe for each an_file, will only have two cols: total time (s) and counts 
@@ -201,7 +208,13 @@ new_an_df = new_an_dfs(an_df)
 en_files_dict, en_df = en_files_to_dict(en_files_only)
 
 # new list that holds dataframes from en files with 'total time (s)' and 'energy' columns only
-new_en_dfs = manipulate_en_df(en_df)
+new_en_df = new_en_dfs(en_df)
 
 # creating a dictionary with key: device names , value: device quantity
 devnames = dev_names(dev_names_path)
+
+# creating a dictionary with key: file names , value: device name
+filenames = file_names(file_names_path)
+	
+# dictionary that stores file name as key and quantity as value
+files_quantity = file_quantity(filenames, devnames)
