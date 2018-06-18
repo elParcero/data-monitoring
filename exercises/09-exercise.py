@@ -15,7 +15,7 @@ months = mdates.MonthLocator()  # every month
 yearsFmt = mdates.DateFormatter('%Y')
 plt.ion()
 
-def readin_file(file_path):
+def readin_file(file_path, file_names):
 	'''
 	Takes in file path as argument
 	Reads file and splits the two columns into two lists
@@ -26,16 +26,21 @@ def readin_file(file_path):
 	index = 0
 	date = []
 	file_size = []
-	with open(file_path) as file:
-		for line in file:
-			if index == 0:
-				index += 1
-				continue
-			else:
-				key_val = line.split(" ")
-				date.append(key_val[0].strip())
-				file_size.append(float(key_val[1].strip()))
-	return date, file_size
+	date_size = dict()
+	for i in range(len(file_names)):
+		with open(file_path + file_names[i]) as file:
+			for line in file:
+				if index == 0:
+					index += 1
+					continue
+				else:
+					key_val = line.split(" ")
+					#date.append(key_val[0].strip())
+					#file_size.append(float(key_val[1].strip()))
+					date_size[key_val[0].strip()] = key_val[1].strip()
+		file_size.append(date_size)
+		date_size = {}
+	return file_size
 
 def create_df(date, file_size):
 	'''
@@ -57,7 +62,7 @@ def plot_usage_versus_day(df):
 	ax.xaxis.set_major_formatter(yearsFmt)
 	ax.xaxis.set_minor_locator(months)
 
-	fig.savefig('chx_daily_usage.png')
+	#fig.savefig('chx_daily_usage.png')
 
 
 def plot_usage_versus_week(df):
@@ -73,7 +78,7 @@ def plot_usage_versus_week(df):
 	ax.xaxis.set_major_formatter(yearsFmt)
 	ax.xaxis.set_minor_locator(months)
 	
-	fig.savefig('chx_weekly_usage.png')
+	#fig.savefig('chx_weekly_usage.png')
 
 def plot_usage_versus_month(df):
 	newdf = df.resample('M').sum()
@@ -88,17 +93,20 @@ def plot_usage_versus_month(df):
 	ax.xaxis.set_major_formatter(yearsFmt)
 	ax.xaxis.set_minor_locator(months)
 
-	fig.savefig('chx_monthly_usage.png')
+	#fig.savefig('chx_monthly_usage.png')
 
 file_path = '/home/jdiaz/projects/data-monitoring/data/file_sizes/'
-files_names = os.listdir(file_path)
-print(files_names)
+file_names = os.listdir(file_path)
+print(file_names)
+
+#list that holds dictionary for each file read in >> key = date, value = file size
+date_size= readin_file(file_path, file_names)
 
 '''
-date, file_size= readin_file(file_path + file_name)
 df = create_df(date, file_size)
 print(df)
 
 plot_usage_versus_day(df)
 plot_usage_versus_week(df)
-plot_usage_versus_month(df)'''
+plot_usage_versus_month(df)
+'''
