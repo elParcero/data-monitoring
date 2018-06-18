@@ -6,6 +6,14 @@
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib.cbook as cbook
+import os
+
+years = mdates.YearLocator()   # every year
+months = mdates.MonthLocator()  # every month
+yearsFmt = mdates.DateFormatter('%Y')
+plt.ion()
 
 def readin_file(file_path):
 	'''
@@ -38,35 +46,59 @@ def create_df(date, file_size):
 	return df
 
 def plot_usage_versus_day(df):
-	plot_0 = df.plot(title = "Usage vs Days", linewidth=.75, grid = True)
-	plot_0.set_xlabel("Days")
-	plot_0.set_ylabel('Usage')
-	plt.show()
+	fig, ax = plt.subplots()
+	ax.bar( df.index, df.file_size *1e-9, width=1)
+	ax.set_xlabel('Time')
+	ax.set_ylabel('Usage (GB)')
+	ax.set_title('CHX')
+
+    # format the ticks
+	ax.xaxis.set_major_locator(years)
+	ax.xaxis.set_major_formatter(yearsFmt)
+	ax.xaxis.set_minor_locator(months)
+
+	fig.savefig('chx_daily_usage.png')
+
 
 def plot_usage_versus_week(df):
-	newdf = df.resample('W').mean()
-	plot_1 = newdf.plot(title='Usage vs Weeks', linewidth=.75, grid=True)
-	plot_1.set_xlabel("Weeks")
-	plot_1.set_ylabel('Usage')
-	plt.show()
-	return
+	newdf = df.resample('W').sum()
+	print(newdf)
+	fig, ax = plt.subplots()
+	ax.bar( newdf.index, newdf.file_size *1e-9, width=7)
+	ax.set_xlabel('Time')
+	ax.set_ylabel('Usage (GB)')
+	ax.set_title('CHX')
+
+	ax.xaxis.set_major_locator(years)
+	ax.xaxis.set_major_formatter(yearsFmt)
+	ax.xaxis.set_minor_locator(months)
+	
+	fig.savefig('chx_weekly_usage.png')
 
 def plot_usage_versus_month(df):
-	newdf = df.resample('M').mean()
-	plot_2 = newdf.plot.bar(title='Usage vs Weeks', linewidth=.75, grid=True)
-	plot_2.set_xlabel("Weeks")
-	plot_2.set_ylabel('Usage')
-	plt.show()
-	return
+	newdf = df.resample('M').sum()
+	print(newdf)
+	fig, ax = plt.subplots()
+	ax.bar( newdf.index, newdf.file_size *1e-9, width=30)
+	ax.set_xlabel('Time')
+	ax.set_ylabel('Usage (GB)')
+	ax.set_title('CHX')
+	
+	ax.xaxis.set_major_locator(years)
+	ax.xaxis.set_major_formatter(yearsFmt)
+	ax.xaxis.set_minor_locator(months)
+
+	fig.savefig('chx_monthly_usage.png')
 
 file_path = '/home/jdiaz/projects/data-monitoring/data/file_sizes/'
-file_name = 'chx.txt'
+files_names = os.listdir(file_path)
+print(files_names)
 
+'''
 date, file_size= readin_file(file_path + file_name)
 df = create_df(date, file_size)
 print(df)
 
-
 plot_usage_versus_day(df)
 plot_usage_versus_week(df)
-plot_usage_versus_month(df)
+plot_usage_versus_month(df)'''
