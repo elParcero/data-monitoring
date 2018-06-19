@@ -29,6 +29,7 @@ def raw_read_in(raw_files):
 		index += 1
 	return raw_files_read_in
 
+
 def files_in_dir(raw_files_read_in):
 	'''
 	returns the list of raw files read in, that is, the data for 
@@ -37,6 +38,7 @@ def files_in_dir(raw_files_read_in):
 	'''
 	return np.asarray(raw_files_read_in)
 
+
 def print_size_files(file_read_in_dir, raw_files):
 	'''
 	prints how many rows and how many columns there are for 
@@ -44,6 +46,7 @@ def print_size_files(file_read_in_dir, raw_files):
 	'''
 	for index in range(len(file_read_in_dir)):
 		print(str(raw_files[index]) + " - (Rows, Columns) - "+ str(file_read_in_dir[index].shape))
+
 
 def print_sum_of_time(sum_of_time):
 	'''
@@ -78,6 +81,7 @@ def an_files_to_dict(an_files_only):
 		
 	return an_data, temp_df
 
+
 def new_an_dfs(an_df):
 	'''
 	returns a new dataframe for an_files with only
@@ -90,6 +94,7 @@ def new_an_dfs(an_df):
 		new_an_df.append(new_df)
 	return new_an_df
 
+
 def read_en_file(file_name):
 	'''
 	creating a data frame for specified file name
@@ -100,6 +105,7 @@ def read_en_file(file_name):
 	encoder_to_energy = en_df['encoder'].apply(enc2counts)
 	en_df['energy'] = encoder_to_energy
 	return en_df
+
 
 def en_files_to_dict(en_files_only):
 	'''
@@ -115,6 +121,7 @@ def en_files_to_dict(en_files_only):
 		
 	return en_data, temp_df
 
+
 def new_en_dfs(en_df):
 	'''
 	creating a new dataframe with only two columns
@@ -126,6 +133,7 @@ def new_en_dfs(en_df):
 		new_en_df = df[['total time (s)' , 'energy']].copy()	
 		en_df_new.append(new_en_df)
 	return en_df_new
+
 
 def dev_names(dev_names_path):
 	'''
@@ -142,6 +150,7 @@ def dev_names(dev_names_path):
 					dev_names[temp_split[0].strip()] = temp_split[1].strip()
 	return dev_names
 
+
 def file_names(file_names_path):
 	'''
 	reads in a text file and finds the file name along 
@@ -157,6 +166,7 @@ def file_names(file_names_path):
 					file_names[temp_split[0].strip()] = temp_split[1].strip()
 	return file_names
 
+
 def file_quantity(filenames, devnames):
 	'''
 	arguments are two dictionaries
@@ -170,6 +180,7 @@ def file_quantity(filenames, devnames):
 		device_quantity = devnames[device_name] 
 		file_quantity[file] = device_quantity
 	return file_quantity
+	
 	
 directory_string = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
 dev_names_path = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/devnames.txt"
