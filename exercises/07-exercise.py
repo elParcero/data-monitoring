@@ -18,7 +18,6 @@ class ANREADER:
 		'''
 		adds the chunks of data to a list
 		'''
-		print(chunk_size)
 		self.chunks_of_data = []
 		for chunk in pd.read_csv(resource_path, chunksize=chunk_size, header=None):
 			self.chunks_of_data.append(chunk)	
@@ -54,7 +53,8 @@ def get_resource(resource_uid, filepath, filename):
 def get_datum(datum_uid, resource_uid):
 	datum = {'datum_id': datum_uid,
  	'datum_kwargs': {'chunk_num': 0},
- 	'resource': resource_uid}
+ 	'resource': resource_uid
+ 	}
 	return datum
 
 
