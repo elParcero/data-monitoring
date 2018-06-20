@@ -7,14 +7,11 @@ import uuid
 import pandas as pd
 import os
 
-<<<<<<< Updated upstream
-=======
 fc = 7.62939453125e-05
 adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
         if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
 enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
->>>>>>> Stashed changes
 
 class ANREADER:
 	'''
@@ -27,16 +24,12 @@ class ANREADER:
 		adds the chunks of data to a list
 		'''
 		self.chunks_of_data = []
-<<<<<<< Updated upstream
-		for chunk in pd.read_csv(resource_path, chunksize=chunk_size, header=None):
-=======
 		for chunk in pd.read_csv(resource_path, delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], chunksize=chunk_size, header=None):
 			chunk['volts'] = chunk['counts'].apply(adc2counts)
 			chunk['total time (s)'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
 			chunk.drop(labels = ['counts', 'time (s)', 'time (ns)'], axis = 1, inplace = True)
 			cols = df.columns.tolist()
 			cols = cols[-1:] + cols[:-1]
->>>>>>> Stashed changes
 			self.chunks_of_data.append(chunk)	
 		
 
@@ -45,10 +38,6 @@ class ANREADER:
 		returns specified chunk number/index from list of all chunks created
 		'''
 		result = self.chunks_of_data[chunk_num]
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 		return result
 
 
@@ -73,11 +62,7 @@ def get_resource(resource_uid, filepath, filename):
 
 def get_datum(datum_uid, resource_uid):
 	datum = {'datum_id': datum_uid,
-<<<<<<< Updated upstream
- 	'datum_kwargs': {'chunk_num': 0},
-=======
  	'datum_kwargs': {'chunk_num': 2},
->>>>>>> Stashed changes
  	'resource': resource_uid
  	}
 	return datum
@@ -104,13 +89,7 @@ filenames = [file for file in filenames if file.startswith('an')]
 resources, datums = create_resource_datum(filenames)
 
 # you would read it something like this
-<<<<<<< Updated upstream
-fh = ANREADER(resources[0]['resource_path'], **resources[0]['resource_kwargs'])
-data = fh(**datums[0]['datum_kwargs'])
-=======
 # fh is an object from the ANREADER class
 # data uses the object created to invoke the __call__ method
 fh = ANREADER(resources[0]['resource_path'], **resources[0]['resource_kwargs'])
 data = fh(**datums[0]['datum_kwargs'])
-
->>>>>>> Stashed changes
