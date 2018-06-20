@@ -16,12 +16,20 @@ enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 class ANREADER:
 	'''
 	resource_path and chunk size are arguments passed in
-   	returns a dataframe object where the df is a specified
+   	returns a dataframe object where the dataframe is a specified
    	chunk of data
 	'''
 	def __init__(self, resource_path, chunk_size = 1024):
 		'''
-		adds the chunks of data to a list
+		Parameters
+		----------
+		resource_path: str
+			user provides path to file in which they will be working with
+		chunk_size: int
+			the size of the chunk of data for each file read in
+		
+		Returns
+		-------
 		'''
 		self.chunks_of_data = []
 		for chunk in pd.read_csv(resource_path, delimiter=" ", names = ['time (s)', 'time (ns)', 'index', 'counts'], chunksize=chunk_size, header=None):
@@ -36,7 +44,15 @@ class ANREADER:
 
 	def __call__(self, chunk_num):
 		'''
-		returns specified chunk number/index from list of all chunks created
+		Parameters
+		----------
+		chunk_num: int
+			user specifies chunk number to be retrieved from data
+		
+		Returns
+		-------
+		chunk_of_data: dataframe object
+			the chunk of data is retrieved from the list holding the chunks
 		'''
 		result = self.chunks_of_data[chunk_num]
 		return result
@@ -44,12 +60,32 @@ class ANREADER:
 
 	def __len__(self):
 		'''
-		returns the number of chunks for specific file
+		Returns
+		-------
+		the number of chunks for specific file: int
 		'''
 		return len(self.chunks_of_data)
 
 
 def get_resource(resource_uid, filepath, filename):
+	'''
+	creates a resource document for file
+
+	Parameters
+	----------
+	resource_uid: str
+		resource_uid will be a unique identifier for the resource document that 
+		will be created
+	filepath: str
+		path to file
+	filename: str
+		the file that is going to be worked with inside the filepath
+
+	Returns
+	-------
+	resource: dict
+		dictionary that contains specific key,val arguments that relates to file
+	'''
 	resource = {'id': resource_uid,
  	'path_semantics': 'posix',
  	'resource_path': filepath + filename,
