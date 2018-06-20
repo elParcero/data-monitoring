@@ -47,18 +47,6 @@ resource = get_resource(resource_uid, filepath) # retrieving dict for resource
 datum = get_datum(datum_uid, resource['uid']) # retrieving dict for datum
 
 # registering a handler according to a certain spec
-
-<<<<<<< Updated upstream
-db.reg.insert_resource( "PIZZABOX_AN_FILE_TXT", resource_path = resource['resource_path'], resource_kwargs= resource['resource_kwargs'])
-db.reg.insert_datum(resource = datum['resource'], datum_id = datum['datum_id'], datum_kwargs = datum['datum_kwargs'])
-
-db.reg.register_resource('PIZZABOX_AN_FILE_TXT', root = resource['root'], rpath = resource['resource_path'], rkwargs = resource['resource_kwargs'])
-db.reg.register_datum(resource_uid = datum['resource'], datum_kwargs = datum['datum_kwargs'])
-
-db.reg.register_handler("PIZZABOX_AN_FILE_TXT", MyHandler)
-
-#resource = db.reg.resource_given_datum_id(datum['datum_id']) # Supply the datum id here
-=======
 new_resource = db.reg.insert_resource( "PIZZABOX_AN_FILE_TXT", resource_path = resource['resource_path'], \
 	resource_kwargs = resource['resource_kwargs'], uid = resource['uid'])
 
@@ -69,4 +57,4 @@ db.reg.register_handler("PIZZABOX_AN_FILE_TXT", MyHandler)
 
 resource = db.reg.resource_given_datum_id(new_datum['datum_id']) # Supply the datum id here
 print(resource)
->>>>>>> Stashed changes
+
