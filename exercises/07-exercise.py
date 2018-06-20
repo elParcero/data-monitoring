@@ -28,8 +28,9 @@ class ANREADER:
 			chunk['volts'] = chunk['counts'].apply(adc2counts)
 			chunk['total time (s)'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
 			chunk.drop(labels = ['counts', 'time (s)', 'time (ns)'], axis = 1, inplace = True)
-			cols = df.columns.tolist()
+			cols = chunk.columns.tolist()
 			cols = cols[-1:] + cols[:-1]
+			chunk = chunk[cols]
 			self.chunks_of_data.append(chunk)	
 		
 
