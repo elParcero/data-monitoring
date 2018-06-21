@@ -14,6 +14,7 @@ db = Broker.from_config(temp_config())
 fc = 7.62939453125e-05
 adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
         if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
+enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
 
 class PizzaBoxAnHandler(HandlerBase):
@@ -47,6 +48,39 @@ class PizzaBoxAnHandler(HandlerBase):
         '''
         result = self.chunks_of_data[chunk_num]
         return result
+
+class PizzaBoxEnHandler(HandlerBase):
+    def __init__(self, resource_path, chunk_size=1024):
+        '''
+        adds the chunks of data to a list for specific file
+
+        Parameters
+        ----------
+        resource_path: str
+            tells the computer where to find the file
+        chunk_size: int (optional)
+            user specifices size of chunk for data, default is 1024
+        '''
+        self.chunks_of_data = []
+        for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
+                names =['time (s)', 'time (ns)', 'index', 'counts'], 
+                delimiter = " ", header=None):
+            chunk['volts'] = chunk['counts'].apply(adc2counts)
+            chunk['total time (s)'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'counts'])
+            chunk = chunk[['total time (s)', 'index', 'volts']]
+            self.chunks_of_data.append(chunk)
+
+    def __call__(self, chunk_num):
+        '''
+        Returns 
+        -------
+        result: dataframe object
+            specified chunk number/index from list of all chunks created
+        '''
+        result = self.chunks_of_data[chunk_num]
+        return result
+
 
 
 def get_resource(resource_uid, filepath):
