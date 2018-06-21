@@ -16,7 +16,7 @@ adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
         if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
 
 
-class MyHandler(HandlerBase):
+class PizzaBoxAnHandler(HandlerBase):
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -116,15 +116,15 @@ new_resource = db.reg.insert_resource( "PIZZABOX_AN_FILE_TXT", resource_path = r
 new_datum = db.reg.insert_datum(resource = new_resource, datum_id = datum['datum_id'],\
  datum_kwargs = datum['datum_kwargs'])
 
-db.reg.register_handler("PIZZABOX_AN_FILE_TXT", MyHandler)
+db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxAnHandler)
 
 resource = db.reg.resource_given_datum_id(new_datum['datum_id']) 
 
 datum_gen = db.reg.datum_gen_given_resource(new_datum['resource']) 
 datums = list(datum_gen) # converts generator object into list
 
-# creating object of MyHandler class
-fh = MyHandler(resource_path=resource['resource_path'],
+# creating object of PizzaBoxAnHandler class
+fh = PizzaBoxAnHandler(resource_path=resource['resource_path'],
     **resource['resource_kwargs'])
 # we want the first datum 
 datum = datums[0]
