@@ -159,8 +159,31 @@ filenames = [file for file in filenames if file.startswith('an')]
 
 resources, datums = create_resource_datum(filenames)
 
+def user_chooses_file(filenames):
+    '''
+    uer chooses which file to work with
+
+    Parameters
+    ----------
+    filenames: list
+        list that contains all file names such 
+        that user can choose which one to work with
+
+    Returns
+    -------
+    file_choice: int
+        number which indexes one of the files from the filenames list
+    '''
+    print("Which file would you like to work with?")
+    for i in range(len(filenames)):
+        print(str(i+1) + ". " + filenames[i])
+    file_choice = int(input('Choose number: ')) - 1
+    return file_choice
+
+file_choice = user_chooses_file(filenames)
+
 # you would read it something like this
 # fh is an object from the ANREADER class
 # data uses the object created to invoke the __call__ method
-fh = ANREADER(resources[0]['resource_path'], **resources[0]['resource_kwargs'])
-data = fh(**datums[0]['datum_kwargs'])
+fh = ANREADER(resources[file_choice]['resource_path'], **resources[file_choice]['resource_kwargs'])
+data = fh(**datums[file_choice]['datum_kwargs'])
