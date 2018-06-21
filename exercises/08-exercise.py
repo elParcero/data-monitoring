@@ -36,7 +36,7 @@ class PizzaBoxAnHandler(HandlerBase):
                 delimiter = " ", header=None):
             chunk['adc'] = chunk['counts'].apply(adc2counts)
             chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'counts', 'index'])
+            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
             chunk = chunk[['timestamp','adc']]
             self.chunks_of_data.append(chunk)
 
