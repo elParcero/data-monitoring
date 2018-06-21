@@ -98,6 +98,23 @@ def get_resource(resource_uid, filepath, filename):
 
 
 def get_datum(datum_uid, resource_uid):
+	'''
+	creates a datum document for file
+
+	Parameters
+	----------
+	datum_uid: str
+		datum_uid will be a unique identifier for the datum document that 
+		will be created
+	resource_uid: str
+		the same resource uid for the file being worked with, datum doc will be able to 
+		point to resource document
+
+	Returns
+	-------
+	datum: dict
+		dictionary that contains specific key,val arguments that relates to file
+	'''
 	datum = {'datum_id': datum_uid,
  	'datum_kwargs': {'chunk_num': 2},
  	'resource': resource_uid
@@ -106,6 +123,19 @@ def get_datum(datum_uid, resource_uid):
 
 
 def create_resource_datum(filenames):
+	'''
+	Parameters
+	----------
+	filenames: list
+		each index is a name of file in directory being worked with
+	
+	Returns
+	-------
+	resources: list
+		each position holds the resource doc for specific file being worked with
+	datums: list
+		each position holds the datum doc for specific file being worked with
+	'''
 	resources = []
 	datums = []
 
