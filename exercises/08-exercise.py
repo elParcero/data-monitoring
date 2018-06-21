@@ -297,17 +297,3 @@ en_fh = PizzaBoxEnHandler(resource_path=registered_en_resources[en_filechoice]['
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
-
-'''
-
-# creating object of PizzaBoxAnHandler class
-fh = PizzaBoxAnHandler(resource_path=resource['resource_path'],
-    **resource['resource_kwargs'])
-# we want the first datum 
-datum = datums[0]
-# this is the data retrieved from the specificed 'datum_kwargs'
-data = fh(**datum['datum_kwargs'])
-
-'''
-
-
