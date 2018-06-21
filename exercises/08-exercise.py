@@ -437,7 +437,7 @@ def en_datums_generated_given_resources(new_en_datums):
 
 def user_filechoice(filenames):
     '''
-    Parameers
+    Parameters
     ----------
     filenames: list
         names of the files to be output so user can select 
