@@ -137,23 +137,67 @@ def get_datum(datum_uid, resource_uid):
         dictionary that contains specific key,val arguments that relates to file
     '''
     datum = {'datum_id': datum_uid,
-    'datum_kwargs': {'chunk_num' : 7},
+    'datum_kwargs': {'chunk_num' : 0},
     'resource': resource_uid
     }
     return datum
 
 
 def gen_an_resource(resource_uid, fPath, an_filename):
+    '''
+    Parameters
+    ----------
+    resource_uid: str
+        unique id for resource doc
+    fPath: str
+        path to file being used to get resource doc
+    an_filename:str
+        the file name in the file path directory
+    Returns
+    -------
+    an_resource: dict
+        the resource document is a dictionary for the an file
+    '''
     an_resource = get_resource(resource_uid, fPath, an_filename)
     return an_resource
 
 
 def gen_an_datum(datum_uid, an_resource_uid):
+    '''
+    Parameters
+    ----------
+    datum_uid: str
+        the uinique id for datum doc associated with an file
+    an_resource_uid: str
+        the unique resource id that points the datum doc to its relating resource doc
+    
+    Returns
+    -------
+    an_datum: dict
+        the datum document is a dictionary for the an file
+    '''
     an_datum = get_datum(datum_uid, an_resource_uid)
     return an_datum
 
 
 def gen_an_resources_datums(fPath, an_filenames):
+    '''
+    generates all resource and datum documents for each an file
+
+    Parameters
+    ----------
+    fPath: str 
+        path that leads to an file being worked with
+    an_filenames: list
+        list that contains each file in the fPath directory
+    
+    Returns
+    -------
+    an_resources: list
+        each index in list holds a resource doc for each an file 
+    an_datums: list
+        each index in list holds a datum doc for each an file 
+    '''
     an_resources = []
     an_datums = []
     for i in range(len(an_filenames)):
@@ -168,6 +212,23 @@ def gen_an_resources_datums(fPath, an_filenames):
 
 
 def register_an_resources_datums(an_resources, an_datums):
+    '''
+    registering resources and datums documents for an files
+
+    Parameters
+    ----------
+    an_resources: list
+        holds the resource documents for the an files
+    an_datums: list
+        holds the datum documents for the an files
+    
+    Returns
+    -------
+    new_resources: list
+        new resource documents for each an file
+    new_datums: list
+        new datum documents for each an file
+    '''
     new_resources = []
     new_datums = []
     for i in range(len(an_resources)):
@@ -185,6 +246,21 @@ def register_an_resources_datums(an_resources, an_datums):
 
 
 def register_an_resources_given_datum_id(new_an_resources, new_an_datums):
+    '''
+    given a datum id, register the resource documents for an files
+
+    Parameters
+    ----------
+    new_an_resources: list
+        holds the new resources for each an file
+    new_an_datums: list
+        holds the new datums for each an file
+
+    Returns
+    -------
+    registered_resources: list
+        list of registered resources for each an file
+    '''
     registered_resources = []
     for i in range(len(new_an_resources)):
         resource = db.reg.resource_given_datum_id(new_an_datums[i]['datum_id'])
@@ -193,6 +269,19 @@ def register_an_resources_given_datum_id(new_an_resources, new_an_datums):
 
 
 def an_datums_generated_given_resources(new_an_datums):
+    '''
+    given a datum id, register the datum documents for an files
+
+    Parameters
+    ----------
+    new_an_datums: list
+        holds the new datums for each an file
+
+    Returns
+    -------
+    an_datums_generated: list
+        list of generated datums for each an file
+    '''
     an_datums_generated = []
     for i in range(len(new_an_datums)):
         datum_gen = db.reg.datum_gen_given_resource(new_an_datums[i]['resource']) 
@@ -201,16 +290,60 @@ def an_datums_generated_given_resources(new_an_datums):
 
 
 def gen_en_resource(resource_uid, fPath, en_filename):
+    '''
+    Parameters
+    ----------
+    resource_uid: str
+        unique id for resource doc
+    fPath: str
+        path to file being used to get resource doc
+    en_filename:str
+        the file name in the file path directory
+    Returns
+    -------
+    en_resource: dict
+        the resource document is a dictionary for the en file
+    '''
     en_resource = get_resource(resource_uid, fPath, en_filename)
     return en_resource
 
 
 def gen_en_datum(datum_uid, en_resource_uid):
+    '''
+    Parameters
+    ----------
+    datum_uid: str
+        the uinique id for datum doc associated with en file
+    en_resource_uid: str
+        the unique resource id that points the datum doc to its relating resource doc
+    
+    Returns
+    -------
+    en_datum: dict
+        the datum document is a dictionary for the en file
+    '''
     en_datum = get_datum(datum_uid, en_resource_uid)
     return en_datum
 
 
 def gen_en_resources_datums(fPath, en_filenames):
+    '''
+    generates all resource and datum documents for each en file
+    
+    Parameters
+    ----------
+    fPath: str 
+        path that leads to en file being worked with
+    en_filenames: list
+        list that contains each file in the fPath directory
+    
+    Returns
+    -------
+    en_resources: list
+        each index in list holds a resource doc for each en file 
+    en_datums: list
+        each index in list holds a datum doc for each en file 
+    '''
     en_resources = []
     en_datums = []
     for i in range(len(en_filenames)):
@@ -225,6 +358,23 @@ def gen_en_resources_datums(fPath, en_filenames):
 
 
 def register_en_resources_datums(en_resources, en_datums):
+    '''
+    registering resources and datums documents for en files
+
+    Parameters
+    ----------
+    en_resources: list
+        holds the resource documents for the en files
+    en_datums: list
+        holds the datum documents for the en files
+    
+    Returns
+    -------
+    new_resources: list
+        new resource documents for each en file
+    new_datums: list
+        new datum documents for each en file
+    '''
     new_resources = []
     new_datums = []
     for i in range(len(en_resources)):
@@ -242,6 +392,21 @@ def register_en_resources_datums(en_resources, en_datums):
 
 
 def register_en_resources_given_datum_id(new_en_resources, new_en_datums):
+    '''
+    given a datum id, register the resource documents for en files
+
+    Parameters
+    ----------
+    new_en_resources: list
+        holds the new resources for each en file
+    new_en_datums: list
+        holds the new datums for each en file
+
+    Returns
+    -------
+    registered_resources: list
+        list of registered resources for each en file
+    '''
     registered_resources = []
     for i in range(len(new_en_resources)):
         resource = db.reg.resource_given_datum_id(new_en_datums[i]['datum_id'])
@@ -250,6 +415,19 @@ def register_en_resources_given_datum_id(new_en_resources, new_en_datums):
 
 
 def en_datums_generated_given_resources(new_en_datums):
+    '''
+    given a datum id, register the datum documents for en files
+
+    Parameters
+    ----------
+    new_en_datums: list
+        holds the new datums for each en file
+
+    Returns
+    -------
+    en_datums_generated: list
+        list of generated datums for each en file
+    '''
     en_datums_generated = []
     for i in range(len(new_en_datums)):
         datum_gen = db.reg.datum_gen_given_resource(new_en_datums[i]['resource']) 
@@ -257,7 +435,23 @@ def en_datums_generated_given_resources(new_en_datums):
     return en_datums_generated
 
 
-#filepath = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/an_2f218f"
+def user_filechoice(filenames):
+    '''
+    Parameers
+    ----------
+    filenames: list
+        names of the files to be output so user can select 
+    Returns
+    -------
+    filechoice: int
+        a number that is related to one of the files output on screen
+    '''
+    print("Which file would you like to look at?")
+    for i in range(len(filenames)): print(str(i + 1)+". " + filenames[i])
+    filechoice = int(input("Choose number: ")) - 1
+    return filechoice 
+
+
 fPath = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
 an_filenames = [an for an in os.listdir(fPath) if an.startswith('an')]
 en_filenames = [en for en in os.listdir(fPath) if en.startswith('en')]
@@ -266,8 +460,10 @@ en_filenames = [en for en in os.listdir(fPath) if en.startswith('en')]
 an_resources, an_datums = gen_an_resources_datums(fPath, an_filenames)
 en_resources, en_datums = gen_en_resources_datums(fPath, en_filenames)
 
+
 new_an_resources, new_an_datums = register_an_resources_datums(an_resources, an_datums)
 new_en_resources, new_en_datums = register_en_resources_datums(en_resources, en_datums)
+
 
 db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxAnHandler)
 db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxEnHandler)
@@ -276,14 +472,10 @@ db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxEnHandler)
 registered_an_resources = register_an_resources_given_datum_id(new_an_resources, new_an_datums)
 an_datums_generated = an_datums_generated_given_resources(new_an_datums)
 
+
 registered_en_resources = register_en_resources_given_datum_id(new_en_resources, new_en_datums)
 en_datums_generated = en_datums_generated_given_resources(new_en_datums)
 
-def user_filechoice(filenames):
-    print("Which file would you like to look at?")
-    for i in range(len(filenames)): print(str(i + 1)+". " + filenames[i])
-    filechoice = int(input("Choose number: "))
-    return filechoice - 1
 
 an_filechoice = user_filechoice(an_filenames)
 an_fh = PizzaBoxAnHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
