@@ -13,37 +13,72 @@ Author: Jorge Diaz Jr
 import pandas as pd
 import os
 
+fc = 7.62939453125e-05
+adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
+        if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
+
 class ANREADER:	
     '''
     resource_path and chunk size are arguments passed in
-    returns a dataframe object where the df is a specified
+    returns a dataframe object where the dataframe is a specified
     chunk of data
     '''
     def __init__(self, resource_path, chunk_size=1024):
         '''
-        adds the chunks of data to a list
+        adds the chunks of data to a list for file selected
+
+        Parameters
+        ----------
+        resource_path: str
+            path to file in which user desires to extract data from
+        chunk_size: int
+            the chunk of data in file that user selected
+
+        Returns
+        -------
         '''
         self.chunks_of_data = []
-        for chunk in pd.read_csv(resource_path, chunksize=chunk_size, header=None):
+        for chunk in pd.read_csv(resource_path, delimiter = " ", names = ['time (s)', 'time (ns)', 'index', 'counts'], chunksize=chunk_size, header=None):
+            chunk['volts'] = chunk['counts'].apply(adc2counts)
+            chunk['total time (s)'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'counts'])
+            chunk = chunk[['total time (s)', 'index', 'volts']]
             self.chunks_of_data.append(chunk)
 
     def __call__(self, chunk_num):
         '''
         returns specified chunk number/index from list of all chunks created
+
+        Parameters
+        ----------
+        chunk_num: int
+            chunk choice or row choice from data
+
+        Returns
+        -------
+        result: dataframe object
+            the dataframe chunk or subset 
         '''
         result = self.chunks_of_data[chunk_num]
         return result
 
     def __len__(self):
         '''
-        returns the number of chunks for specific file
+        Returns
+        ------- 
+        len: int
+            the number of chunks for specific file
         '''
         return len(self.chunks_of_data)
 
 def file_choice():
     '''
     user gets to select which file they want to work with
-    returns number for file choice
+    
+    Returns 
+    -------
+    file_choice: int
+        index position of file in list
     '''
     print('Which file would you like to look at?')
     index = 1
@@ -55,7 +90,11 @@ def file_choice():
 def chunk_choice(myreader, file):
     '''
     user will need to enter which chunk number is desired from the data
-    returns chunk choice
+    
+    Returns
+    ------- 
+    chunk choice: int
+        the chunk/row number desired in data set
     '''
     print('There are {0} chunks in {1}.'.format(len(myreader), file))
     return int(input("Which chunk number will you want, choose between 0 - {}:\nChunk choice: ".format(len(myreader) - 1)))
