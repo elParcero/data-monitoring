@@ -50,6 +50,7 @@ print(df)
 # columns in df object are of Series type, following lines convert it and i0 columns to ndarray with float type values
 it_data = np.array(df.it, dtype="float")
 i0_data = np.array(df.i0, dtype="float")
+energy_data = np.array(df.energy, dtype="float")
 
 #plotting
 plt.ion()
@@ -57,6 +58,15 @@ plt.figure(0)
 plt.clf()
 plt.plot(np.log(it_data/i0_data), color='#be0119')  #scarlet color
 plt.xlabel('Scan Number')
+plt.ylabel('log(it) / log(i0)')
+plt.title("XAS_DATA")
+plt.grid(True)
+plt.show()
+
+plt.figure(1)
+plt.clf()
+plt.plot( np.log(it_data/i0_data) , energy_data, color='#be0119')
+plt.xlabel('energy (keV)')
 plt.ylabel('log(it) / log(i0)')
 plt.title("XAS_DATA")
 plt.grid(True)
