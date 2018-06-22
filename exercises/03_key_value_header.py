@@ -65,7 +65,10 @@ plt.show()
 
 plt.figure(1)
 plt.clf()
+
 plt.plot(energy_data, np.log(it_data/i0_data), color='#be0119')  #scarlet color
+
+
 plt.xlabel('energy (keV)')
 plt.ylabel('log(it) / log(i0)')
 plt.title("XAS_DATA")
