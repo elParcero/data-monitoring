@@ -36,7 +36,7 @@ class NumpySeqHandler:
 
     def get_file_list(self, datum_kwarg_gen):
         #This method is optional. It is not needed for access, but for export.
-        return ['{name}_{index}.npy'.format(name=self._name, **kwargs)
+        return ['{name}_{index}.npy'.format(name=self._name, **kwargs['index']) #**kwargs
                 for kwargs in datum_kwarg_gen]
 
 
@@ -45,37 +45,53 @@ class NumpySeqHandler:
         fpath = resource['root'] + "/" + resource['resource_path'] + \
             '_' + str(datum_kwarg_gen['datum_kwargs']['index']) + '.npy'
         size = os.path.getsize(fpath)
+        
         return size
- 
+
+
+events = []
+datum_ids = []
+resources = []
+datums = []
 
 db = Broker.from_config(temp_config())
+
 reg_handler = db.reg.register_handler("NPY_SEQ", NumpySeqHandler)
+
 # img is a simulated detector. It needs to know where reg is located
-
-
 RE = RunEngine({})
 
 # subscribe writing to database to the RunEngine
 RE.subscribe(db.insert)
 
+# counting images
+for i in range(10):
+    uid, = RE(count([img, det1, det2]))
 
-# count an image
-uid, = RE(count([img, det1, det2]))
+#extracting the events from each header doc in the files generated
+for i in range(10):
+    hdr = db[-i - 1]
+    event = hdr.events()
+    events.append(next(event))
 
-# now run db[-1] etc
-hdr = db[-1]
-events = db.get_events(hdr)
-event = next(events)
+#extracting the datum ids from each event that was generated
+for i in range(len(events)):
+    datum_ids.append(events[i]['data']['img'])
 
-
-datum_id = event['data']['img']
 # call these functionos to get the resource and datum
-resource = db.reg.resource_given_datum_id(datum_id)
-datum_gen = db.reg.datum_gen_given_resource(resource)
-datum = next(datum_gen)
+# and store them in a resources list and datums list
+for i in range(len(datum_ids)):
+    resource = db.reg.resource_given_datum_id(datum_ids[i])
+    datum_gen = db.reg.datum_gen_given_resource(resource)
+    resources.append(resource)
+    datums.append(next(datum_gen))
 
 # initialize a file handler
-fh = NumpySeqHandler(resource['resource_path'], resource['root'])
-size = fh.get_file_size(datum)
-print('File size is ' +str(size)+ 'B')
-
+# then retrieve the size for that specific file
+for i in range(len(datums)):
+    fh = NumpySeqHandler(resources[i]['resource_path'], resources[i]['root'])
+    size = fh.get_file_size(datums[i])
+    print(resources[i]['resource_path'] + '_'  \
+     +  str(datums[i]['datum_kwargs']['index'])\
+     + '.npy'+ ': file size = ' +str(size)+ 'B')
+    
