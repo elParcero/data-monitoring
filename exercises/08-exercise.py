@@ -19,6 +19,7 @@ enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
 
 class PizzaBoxANHandler(HandlerBase):
+    
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -68,6 +69,7 @@ class PizzaBoxANHandler(HandlerBase):
 
         '''
 
+
     def __call__(self, chunk_num):
         '''
         Returns 
@@ -78,7 +80,26 @@ class PizzaBoxANHandler(HandlerBase):
         result = self.chunks_of_data[chunk_num]
         return result
 
+
+    def get_file_size(self, datum_kwarg_gen):
+        resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
+        fpath = resource['root'] + "/" + resource['resource_path'] 
+        size = os.path.getsize(fpath)
+        typeByte = "B"
+        if size >= 1000 and size <1000000:
+           size = size * 1e-3
+           typeByte = 'K' + typeByte
+        elif size >= 1000000 and size < 1000000000:
+            size = size * 1e-6
+            typeByte = 'M' + typeByte
+        elif size >= 1000000000:
+            size = size * 1e-6
+            typeByte = 'G' + typeByte
+        return typeByte, size
+
+
 class PizzaBoxENHandler(HandlerBase):
+    
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -100,6 +121,7 @@ class PizzaBoxENHandler(HandlerBase):
             chunk = chunk[['timestamp', 'encoder']]
             self.chunks_of_data.append(chunk)
 
+
     def __call__(self, chunk_num):
         '''
         Returns 
@@ -110,6 +132,22 @@ class PizzaBoxENHandler(HandlerBase):
         result = self.chunks_of_data[chunk_num]
         return result
 
+
+    def get_file_size(self, datum_kwarg_gen):
+        resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
+        fpath = resource['root'] + "/" + resource['resource_path'] 
+        size = os.path.getsize(fpath)
+        typeByte = "B"
+        if size >= 1000 and size <1000000:
+           size = size * 1e-3
+           typeByte = 'K' + typeByte
+        elif size >= 1000000 and size < 1000000000:
+            size = size * 1e-6
+            typeByte = 'M' + typeByte
+        elif size >= 1000000000:
+            size = size * 1e-6
+            typeByte = 'G' + typeByte
+        return typeByte, size
 
 
 def get_resource(resource_uid, filepath, filename):
@@ -479,20 +517,20 @@ def user_filechoice(filenames):
     filechoice = int(input("Choose number: ")) - 1
     return filechoice 
 
-
+#file path and filenames for both AN & EN files
 fPath = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
 an_filenames = [an for an in os.listdir(fPath) if an.startswith('an')]
 en_filenames = [en for en in os.listdir(fPath) if en.startswith('en')]
 
-
+# resources and datums for both AN & EN files
 an_resources, an_datums = gen_an_resources_datums(fPath, an_filenames)
 en_resources, en_datums = gen_en_resources_datums(fPath, en_filenames)
 
-
+# new resources and datums that were registered
 new_an_resources, new_an_datums = register_an_resources_datums(an_resources, an_datums)
 new_en_resources, new_en_datums = register_en_resources_datums(en_resources, en_datums)
 
-
+# handlers are being registered
 db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxANHandler)
 db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxENHandler)
 
@@ -504,16 +542,22 @@ an_datums_generated = an_datums_generated_given_resources(new_an_datums)
 registered_en_resources = register_en_resources_given_datum_id(new_en_resources, new_en_datums)
 en_datums_generated = en_datums_generated_given_resources(new_en_datums)
 
-
+# user gets to select file to work with and data is retrieved
 an_filechoice = user_filechoice(an_filenames)
 an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
 an_data = an_fh(**an_datum['datum_kwargs'])
+typeByte, fSize = an_fh.get_file_size(an_datum)
+print('{0} : {1}{2}'.format(an_filenames[an_filechoice], str(round(fSize, 1)), typeByte))
 
+print()
 
+# user gets to select file to work with and data is retrieved
 en_filechoice = user_filechoice(en_filenames)
 en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['resource_path'],
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
+typeByte, fSize = en_fh.get_file_size(en_datum)
+print('{0} : {1}{2}'.format(en_filenames[en_filechoice], str(round(fSize, 1)), typeByte))
