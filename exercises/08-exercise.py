@@ -3,6 +3,7 @@ Author: Jorge Diaz Jr
 Exercise 8
 '''
 import uuid
+import humanize
 import pandas as pd
 import os
 from databroker.tests.utils import temp_config
@@ -44,7 +45,7 @@ class PizzaBoxANHandler(HandlerBase):
                 chunk['adc (b)'] = chunk['counts (b)'].apply(adc2counts)
                 chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
                 chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts (a)', 'counts (b)'])
-                chunk = chunk[['timestamp','adc (a)', 'adc (b)']]
+                chunk = chunk[['timestamp', 'adc (a)', 'adc (b)']]
                 self.chunks_of_data.append(chunk)
         elif(num_cols == 4):
             for chunk in chunk:
@@ -54,6 +55,7 @@ class PizzaBoxANHandler(HandlerBase):
                 chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
                 chunk = chunk[['timestamp','adc']]
                 self.chunks_of_data.append(chunk)
+        #print(resource_path['/an':] + " has " + str(num_cols) + " columns")
         
 
     def __call__(self, chunk_num, column):
@@ -63,25 +65,33 @@ class PizzaBoxANHandler(HandlerBase):
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        result = self.chunks_of_data[chunk_num]
-        return result
+        _, num_cols = self.chunks_of_data[0].shape
+
+
+        if column == 0 and num_cols == 3:
+            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
+                'counts':  self.chunks_of_data[chunk_num]['adc (a)']}
+            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+            return chunk 
+        elif column == 1 and num_cols == 3:
+            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
+                'counts':  self.chunks_of_data[chunk_num]['adc (b)']}
+            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+            return chunk
+        elif column == 0 and num_cols == 2:
+            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
+                'counts':  self.chunks_of_data[chunk_num]['adc']}
+            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+            return chunk
 
 
     def get_file_size(self, datum_kwarg_gen):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
         fpath = resource['root'] + "/" + resource['resource_path'] 
         size = os.path.getsize(fpath)
-        typeByte = "B"
-        if size >= 1000 and size <1000000:
-           size = size * 1e-3
-           typeByte = 'K' + typeByte
-        elif size >= 1000000 and size < 1000000000:
-            size = size * 1e-6
-            typeByte = 'M' + typeByte
-        elif size >= 1000000000:
-            size = size * 1e-6
-            typeByte = 'G' + typeByte
-        return typeByte, size
+        sizeType = humanize.naturalsize(size)
+        
+        print(sizeType)
 
 
 class PizzaBoxENHandler(HandlerBase):
@@ -108,7 +118,7 @@ class PizzaBoxENHandler(HandlerBase):
             self.chunks_of_data.append(chunk)
 
 
-    def __call__(self, chunk_num):
+    def __call__(self, chunk_num, column):
         '''
         Returns 
         -------
@@ -123,17 +133,9 @@ class PizzaBoxENHandler(HandlerBase):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
         fpath = resource['root'] + "/" + resource['resource_path'] 
         size = os.path.getsize(fpath)
-        typeByte = "B"
-        if size >= 1000 and size <1000000:
-           size = size * 1e-3
-           typeByte = 'K' + typeByte
-        elif size >= 1000000 and size < 1000000000:
-            size = size * 1e-6
-            typeByte = 'M' + typeByte
-        elif size >= 1000000000:
-            size = size * 1e-6
-            typeByte = 'G' + typeByte
-        return typeByte, size
+        sizeType = humanize.naturalsize(size)
+        
+        print(sizeType)
 
 
 def get_resource(resource_uid, filepath, filename):
@@ -189,7 +191,7 @@ def get_datum(datum_uid, resource_uid):
         dictionary that contains specific key,val arguments that relates to file
     '''
     datum = {'datum_id': datum_uid,
-    'datum_kwargs': {'chunk_num' : 0},
+    'datum_kwargs': {'chunk_num' : 0, 'column' : 0},
     'resource': resource_uid
     }
     return datum
@@ -516,10 +518,11 @@ en_resources, en_datums = gen_en_resources_datums(fPath, en_filenames)
 new_an_resources, new_an_datums = register_an_resources_datums(an_resources, an_datums)
 new_en_resources, new_en_datums = register_en_resources_datums(en_resources, en_datums)
 
+
+
 # handlers are being registered
 db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxANHandler)
 db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxENHandler)
-
 
 registered_an_resources = register_an_resources_given_datum_id(new_an_resources, new_an_datums)
 an_datums_generated = an_datums_generated_given_resources(new_an_datums)
@@ -533,9 +536,8 @@ an_filechoice = user_filechoice(an_filenames)
 an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
-an_data = an_fh(**an_datum['datum_kwargs'])
-typeByte, fSize = an_fh.get_file_size(an_datum)
-print('{0} : {1}{2}'.format(an_filenames[an_filechoice], str(round(fSize, 1)), typeByte))
+an_data = an_fh(**an_datum['datum_kwargs'] )
+an_fh.get_file_size(an_datum)
 
 print()
 
@@ -545,5 +547,5 @@ en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
-typeByte, fSize = en_fh.get_file_size(en_datum)
-print('{0} : {1}{2}'.format(en_filenames[en_filechoice], str(round(fSize, 1)), typeByte))
+en_fh.get_file_size(en_datum)
+
