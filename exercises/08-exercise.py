@@ -18,7 +18,7 @@ adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
 enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
 
-class PizzaBoxAnHandler(HandlerBase):
+class PizzaBoxANHandler(HandlerBase):
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -31,6 +31,32 @@ class PizzaBoxAnHandler(HandlerBase):
             user specifices size of chunk for data, default is 1024
         '''
         self.chunks_of_data = []
+        chunk = [data for data in pd.read_csv(resource_path, 
+            chunksize=chunk_size, delimiter = " ", header = None) ]
+        
+        _, num_cols = chunk[0].shape
+
+        if(num_cols == 5):
+            for chunk in chunk:
+                chunk.columns = ['time (s)','time (ns)','index', 'counts (a)','counts (b)']
+                chunk['adc (a)'] = chunk['counts (a)'].apply(adc2counts)
+                chunk['adc (b)'] = chunk['counts (b)'].apply(adc2counts)
+                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts (a)', 'counts (b)'])
+                chunk = chunk[['timestamp','adc (a)', 'adc (b)']]
+                self.chunks_of_data.append(chunk)
+        elif(num_cols == 4):
+            for chunk in chunk:
+                chunk.columns = ['time (s)','time (ns)','index', 'counts']
+                chunk['adc'] = chunk['counts'].apply(adc2counts)
+                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
+                chunk = chunk[['timestamp','adc']]
+                self.chunks_of_data.append(chunk)
+        
+
+        '''
+        self.chunks_of_data = []
         for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
                 names =['time (s)', 'time (ns)', 'index', 'counts'], 
                 delimiter = " ", header=None):
@@ -39,6 +65,8 @@ class PizzaBoxAnHandler(HandlerBase):
             chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
             chunk = chunk[['timestamp','adc']]
             self.chunks_of_data.append(chunk)
+
+        '''
 
     def __call__(self, chunk_num):
         '''
@@ -50,7 +78,7 @@ class PizzaBoxAnHandler(HandlerBase):
         result = self.chunks_of_data[chunk_num]
         return result
 
-class PizzaBoxEnHandler(HandlerBase):
+class PizzaBoxENHandler(HandlerBase):
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -465,8 +493,8 @@ new_an_resources, new_an_datums = register_an_resources_datums(an_resources, an_
 new_en_resources, new_en_datums = register_en_resources_datums(en_resources, en_datums)
 
 
-db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxAnHandler)
-db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxEnHandler)
+db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxANHandler)
+db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxENHandler)
 
 
 registered_an_resources = register_an_resources_given_datum_id(new_an_resources, new_an_datums)
@@ -478,14 +506,14 @@ en_datums_generated = en_datums_generated_given_resources(new_en_datums)
 
 
 an_filechoice = user_filechoice(an_filenames)
-an_fh = PizzaBoxAnHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
+an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
 an_data = an_fh(**an_datum['datum_kwargs'])
 
 
 en_filechoice = user_filechoice(en_filenames)
-en_fh = PizzaBoxEnHandler(resource_path=registered_en_resources[en_filechoice]['resource_path'],
+en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['resource_path'],
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
