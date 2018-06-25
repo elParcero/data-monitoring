@@ -56,21 +56,7 @@ class PizzaBoxANHandler(HandlerBase):
                 self.chunks_of_data.append(chunk)
         
 
-        '''
-        self.chunks_of_data = []
-        for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
-                names =['time (s)', 'time (ns)', 'index', 'counts'], 
-                delimiter = " ", header=None):
-            chunk['adc'] = chunk['counts'].apply(adc2counts)
-            chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
-            chunk = chunk[['timestamp','adc']]
-            self.chunks_of_data.append(chunk)
-
-        '''
-
-
-    def __call__(self, chunk_num):
+    def __call__(self, chunk_num, column):
         '''
         Returns 
         -------
