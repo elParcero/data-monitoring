@@ -6,6 +6,8 @@ Exercise 10
 Get file size
 
 '''
+import humanize
+
 import numpy as np
 import os
 from functools import wraps
@@ -40,19 +42,22 @@ class NumpySeqHandler:
                 for kwargs in datum_kwarg_gen]
 
 
-    def get_file_size(self, datum_kwarg_gen):
-        resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
-        fpath = resource['root'] + "/" + resource['resource_path'] + \
-            '_' + str(datum_kwarg_gen['datum_kwargs']['index']) + '.npy'
-        size = os.path.getsize(fpath)
+    def get_file_size(self, datum_gen):
         
-        return size
+        sizes = list()
+
+        for datum in datum_gen:
+        	index = datum['datum_kwargs']['index']
+        	filename = f'{self._name}_{index}.npy'
+        	size = os.path.getsize(filename)
+        	sizes.append(humanize.naturalsize(size))
+        	
+        return sizes
 
 
 events = []
 datum_ids = []
-resources = []
-datums = []
+
 
 db = Broker.from_config(temp_config())
 
@@ -78,20 +83,21 @@ for i in range(10):
 for i in range(len(events)):
     datum_ids.append(events[i]['data']['img'])
 
-# call these functionos to get the resource and datum
-# and store them in a resources list and datums list
+resources = list()
+#resources = set()
+# call these functions to get the resource 
+# and store them in a resources list 
 for i in range(len(datum_ids)):
     resource = db.reg.resource_given_datum_id(datum_ids[i])
-    datum_gen = db.reg.datum_gen_given_resource(resource)
     resources.append(resource)
-    datums.append(next(datum_gen))
-
+    #resources.add(resource['id'])
+   
+sizes = []
 # initialize a file handler
 # then retrieve the size for that specific file
-for i in range(len(datums)):
-    fh = NumpySeqHandler(resources[i]['resource_path'], resources[i]['root'])
-    size = fh.get_file_size(datums[i])
-    print(resources[i]['resource_path'] + '_'  \
-     +  str(datums[i]['datum_kwargs']['index'])\
-     + '.npy'+ ': file size = ' +str(size)+ 'B')
-    
+for resource in resources:
+	fh = NumpySeqHandler(resource['resource_path'], resource['root'])
+	datum_gen = db.reg.datum_gen_given_resource(resource)
+	sizes.append(fh.get_file_size(datum_gen))
+
+print(sizes)
