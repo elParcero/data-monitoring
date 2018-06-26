@@ -36,26 +36,25 @@ class PizzaBoxANHandler(HandlerBase):
         chunk = [data for data in pd.read_csv(resource_path, 
             chunksize=chunk_size, delimiter = " ", header = None) ]
         
-        _, num_cols = chunk[0].shape
+        num_cols = len(chunk[0].columns)
 
-        if(num_cols == 5):
-            for chunk in chunk:
-                chunk.columns = ['time (s)','time (ns)','index', 'counts (a)','counts (b)']
-                chunk['adc (a)'] = chunk['counts (a)'].apply(adc2counts)
-                chunk['adc (b)'] = chunk['counts (b)'].apply(adc2counts)
-                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts (a)', 'counts (b)'])
-                chunk = chunk[['timestamp', 'adc (a)', 'adc (b)']]
-                self.chunks_of_data.append(chunk)
-        elif(num_cols == 4):
-            for chunk in chunk:
-                chunk.columns = ['time (s)','time (ns)','index', 'counts']
-                chunk['adc'] = chunk['counts'].apply(adc2counts)
-                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
-                chunk = chunk[['timestamp','adc']]
-                self.chunks_of_data.append(chunk)
-        #print(resource_path['/an':] + " has " + str(num_cols) + " columns")
+        columns = ['time (s)', 'time (ns)', 'index']
+        columns_leftover = num_cols - len(columns)
+        columns = columns + [f'adc {i}' for i in range(columns_leftover)]
+        
+        for chunk in chunk:
+            chunk.columns = columns
+            
+            for column in range(columns_leftover):
+                chunk.iloc[:, column + 3] = chunk.iloc[:, column + 3].apply(adc2counts)
+            
+            chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index'])
+            new_cols = chunk.columns.tolist()
+            new_cols = new_cols[-1:] + new_cols[:-1]
+            chunk = chunk[new_cols]
+            print(chunk)
+            self.chunks_of_data.append(chunk)    
         
 
     def __call__(self, chunk_num, column):
@@ -65,25 +64,20 @@ class PizzaBoxANHandler(HandlerBase):
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        _, num_cols = self.chunks_of_data[0].shape
-
-
-        if column == 0 and num_cols == 3:
+        
+        if column == 0:
             cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc (a)']}
+                'counts':  self.chunks_of_data[chunk_num]\
+                        [self.chunks_of_data[chunk_num].columns[column+1]]}
+            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+            return chunk
+        else:
+            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
+                'counts':  self.chunks_of_data[chunk_num]\
+                        [self.chunks_of_data[chunk_num].columns[column]]}
             chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
             return chunk 
-        elif column == 1 and num_cols == 3:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc (b)']}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk
-        elif column == 0 and num_cols == 2:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc']}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk
-
+       
 
     def get_file_size(self, datum_kwarg_gen):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
@@ -536,6 +530,8 @@ an_filechoice = user_filechoice(an_filenames)
 an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
+
+
 an_data = an_fh(**an_datum['datum_kwargs'] )
 an_fh.get_file_size(an_datum)
 
