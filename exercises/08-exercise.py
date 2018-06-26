@@ -53,7 +53,6 @@ class PizzaBoxANHandler(HandlerBase):
             new_cols = chunk.columns.tolist()
             new_cols = new_cols[-1:] + new_cols[:-1]
             chunk = chunk[new_cols]
-            print(chunk)
             self.chunks_of_data.append(chunk)    
         
 
@@ -530,8 +529,6 @@ an_filechoice = user_filechoice(an_filenames)
 an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
-
-
 an_data = an_fh(**an_datum['datum_kwargs'] )
 an_fh.get_file_size(an_datum)
 
