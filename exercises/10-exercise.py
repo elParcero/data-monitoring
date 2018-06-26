@@ -99,5 +99,5 @@ for resource in resources:
 	fh = NumpySeqHandler(resource['resource_path'], resource['root'])
 	datum_gen = db.reg.datum_gen_given_resource(resource)
 	sizes.append(fh.get_file_size(datum_gen))
-
+    
 print(sizes)
