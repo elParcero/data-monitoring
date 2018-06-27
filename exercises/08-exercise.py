@@ -10,6 +10,8 @@ from databroker.tests.utils import temp_config
 from databroker import Broker
 from databroker.assets.handlers_base import HandlerBase
 
+
+
 # this will create a temporary databroker object with nothing in it
 db = Broker.from_config(temp_config())
 
@@ -32,6 +34,7 @@ class PizzaBoxANHandler(HandlerBase):
         chunk_size: int (optional)
             user specifices size of chunk for data, default is 1024
         '''
+        self._name = resource_path
         self.chunks_of_data = []
         chunk = [data for data in pd.read_csv(resource_path, 
             chunksize=chunk_size, delimiter = " ", header = None) ]
@@ -61,22 +64,19 @@ class PizzaBoxANHandler(HandlerBase):
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        column_desired = self.chunks_of_data[chunk_num].columns[column+1]
         cols = {
         		'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
-           		'counts': self.chunks_of_data[chunk_num][column_desired]
+           		'counts': self.chunks_of_data[chunk_num][f'adc {column}']
                }
-        chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-        return chunk
+        return pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+         
         
 
     def get_file_size(self, datum_kwarg_gen):
-        resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
-        fpath = resource['root'] + "/" + resource['resource_path'] 
-        size = os.path.getsize(fpath)
-        sizeType = humanize.naturalsize(size)
-        
-        print(sizeType)
+        filename = f'{self._name}'
+        size = os.path.getsize(filename)
+               
+        return size
 
 
 class PizzaBoxENHandler(HandlerBase):
@@ -92,6 +92,7 @@ class PizzaBoxENHandler(HandlerBase):
         chunk_size: int (optional)
             user specifices size of chunk for data, default is 1024
         '''
+        self._name = resource_path
         self.chunks_of_data = []
         for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
                 names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], 
@@ -115,12 +116,10 @@ class PizzaBoxENHandler(HandlerBase):
 
 
     def get_file_size(self, datum_kwarg_gen):
-        resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
-        fpath = resource['root'] + "/" + resource['resource_path'] 
-        size = os.path.getsize(fpath)
-        sizeType = humanize.naturalsize(size)
-        
-        print(sizeType)
+        filename = f'{self._name}'
+        size = os.path.getsize(filename)
+               
+        return size
 
 
 def get_resource(resource_uid, filepath, filename):
@@ -522,7 +521,8 @@ an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
 an_data = an_fh(**an_datum['datum_kwargs'] )
-an_fh.get_file_size(an_datum)
+an_size = an_fh.get_file_size(an_datum)
+print(humanize.naturalsize(an_size))
 
 print()
 
@@ -532,5 +532,5 @@ en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
-en_fh.get_file_size(en_datum)
-
+en_size = en_fh.get_file_size(en_datum)
+print(humanize.naturalsize(en_size))
