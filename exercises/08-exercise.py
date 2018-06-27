@@ -49,10 +49,8 @@ class PizzaBoxANHandler(HandlerBase):
                 chunk.iloc[:, column + 3] = chunk.iloc[:, column + 3].apply(adc2counts)
             
             chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index'])
-            new_cols = chunk.columns.tolist()
-            new_cols = new_cols[-1:] + new_cols[:-1]
-            chunk = chunk[new_cols]
+            column_keys = ['timestamp'] + [f'adc {i}' for i in range(columns_leftover)]
+            chunk = chunk[column_keys]
             self.chunks_of_data.append(chunk)    
         
 
@@ -63,20 +61,14 @@ class PizzaBoxANHandler(HandlerBase):
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
+        column_desired = self.chunks_of_data[chunk_num].columns[column+1]
+        cols = {
+        		'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
+           		'counts': self.chunks_of_data[chunk_num][column_desired]
+               }
+        chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+        return chunk
         
-        if column == 0:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]\
-                        [self.chunks_of_data[chunk_num].columns[column+1]]}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk
-        else:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]\
-                        [self.chunks_of_data[chunk_num].columns[column]]}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk 
-       
 
     def get_file_size(self, datum_kwarg_gen):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
