@@ -6,20 +6,12 @@ xf28id2-ws2_file_sizes
 '''
 from datetime import datetime
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.cbook as cbook
 import os
 from os.path import basename
 
 from bokeh.io import show, output_file
 from bokeh.plotting import figure
 from bokeh.models import Title
-
-
-years = mdates.YearLocator()   # every year
-months = mdates.MonthLocator()  # every month
-yearsFmt = mdates.DateFormatter('%Y')
 
 
 def readin_file(file_path, file_names):
