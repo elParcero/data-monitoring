@@ -1,5 +1,5 @@
 '''
-Author: Jorge Diaz
+Author: Jorge Diaz Jr
 Exercise 7
 File Handler
 '''
