@@ -1,5 +1,5 @@
 '''
-Author: Jorge Diaz
+Author: Jorge Diaz Jr
 '''
 from databroker import Broker
 import pandas as pd
