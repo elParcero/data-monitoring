@@ -1,5 +1,5 @@
 '''
-    Author: Jorge Diaz
+    Author: Jorge Diaz Jr
     Exercise 9
 '''
 
