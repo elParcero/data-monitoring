@@ -1,14 +1,10 @@
 '''
 Author: Jorge Diaz Jr
 
-    Exercise 6
-    Can you now turn your result from exercise 4 into an object?
-
-    The idea is to run:
-    myreader = ANReader(filename, chunk_size=1024)
-    # get the 10th chunk of 1024 rows as a pandas dataframe
-    row = myreader(10)
-
+The idea is to run:
+myreader = ANReader(filename, chunk_size=1024)
+# get the 10th chunk of 1024 rows as a pandas dataframe
+row = myreader(10)
 '''
 import pandas as pd
 import os
