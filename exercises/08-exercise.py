@@ -72,10 +72,13 @@ class PizzaBoxANHandler():
                 'counts': self.chunks_of_data[chunk_num][f'adc {column}']}
         return pd.DataFrame(cols, columns=['timestamp', 'counts'])
 
-    def get_file_size(self, datum_kwarg_gen):
-        filename = f'{self._name}'
+    def get_file_size(self, datum_kwargs):
+        filename = '{}'.format(self._name)
         size = os.path.getsize(filename)
         return size
+
+    def get_file_list(self, datum_kwargs):
+        print(datum_kwargs)
 
 
 class PizzaBoxENHandler():
@@ -114,8 +117,8 @@ class PizzaBoxENHandler():
         result = self.chunks_of_data[chunk_num]
         return result
 
-    def get_file_size(self, datum_kwarg_gen):
-        filename = f'{self._name}'
+    def get_file_size(self, datum_kwargs):
+        filename = '{}'.format(self._name)
         size = os.path.getsize(filename)
         return size
 
@@ -520,6 +523,7 @@ an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['
 an_datum = an_datums_generated[an_filechoice]
 an_data = an_fh(**an_datum['datum_kwargs'] )
 an_size = an_fh.get_file_size(an_datum)
+an_fh.get_file_list(**an_datum['datum_kwargs'])
 print(humanize.naturalsize(an_size))
 
 print()
