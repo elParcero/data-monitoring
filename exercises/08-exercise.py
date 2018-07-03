@@ -9,6 +9,7 @@ import os
 from databroker.tests.utils import temp_config
 from databroker import Broker
 from databroker.assets.handlers_base import HandlerBase
+
 # this will create a temporary databroker object with nothing in it
 db = Broker.from_config(temp_config())
 
@@ -73,12 +74,16 @@ class PizzaBoxANHandler():
         return pd.DataFrame(cols, columns=['timestamp', 'counts'])
 
     def get_file_size(self, datum_kwargs):
-        filename = '{}'.format(self._name)
-        size = os.path.getsize(filename)
-        return size
+        sizes = []
+        files = self.get_file_list(datum_kwargs)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
 
     def get_file_list(self, datum_kwargs):
-        print(datum_kwargs)
+        file_names = []
+        file_names.append(self._name)
+        return file_names
 
 
 class PizzaBoxENHandler():
@@ -118,9 +123,16 @@ class PizzaBoxENHandler():
         return result
 
     def get_file_size(self, datum_kwargs):
-        filename = '{}'.format(self._name)
-        size = os.path.getsize(filename)
-        return size
+        sizes = []
+        files = self.get_file_list(datum_kwargs)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
+
+    def get_file_list(self, datum_kwargs):
+        file_names = []
+        file_names.append(self._name)
+        return file_names
 
 
 def get_resource(resource_uid, filepath, filename):
@@ -523,8 +535,8 @@ an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['
 an_datum = an_datums_generated[an_filechoice]
 an_data = an_fh(**an_datum['datum_kwargs'] )
 an_size = an_fh.get_file_size(an_datum)
-an_fh.get_file_list(**an_datum['datum_kwargs'])
-print(humanize.naturalsize(an_size))
+an_files = an_fh.get_file_list(an_datum['datum_kwargs'])
+print(humanize.naturalsize(an_size[0]))
 
 print()
 
@@ -535,4 +547,5 @@ en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
 en_size = en_fh.get_file_size(en_datum)
-print(humanize.naturalsize(en_size))
+en_files = en_fh.get_file_list(en_datum['datum_kwargs'])
+print(humanize.naturalsize(en_size[0]))
