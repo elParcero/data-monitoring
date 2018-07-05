@@ -1,7 +1,7 @@
 from databroker import Broker
 import pandas as pd
-import time
 import datetime
+import time
 from time import mktime
 from eiger_io.fs_handler import EigerHandler
 
@@ -42,7 +42,7 @@ def file_sizes(hdrs, db):
                                     # get the file handler using this
                                     fh = db.reg.get_spec_handler(resource_id)
                                     print(fh)
-                                    file_sizes = sum(fh.get_file_size(datum_kwargs))
+                                    file_sizes = sum(fh.get_file_sizes(datum_kwargs))
                                     print(file_sizes)
                                     time_size[timestamp] = file_sizes
                 except StopIteration:
