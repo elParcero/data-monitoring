@@ -4,6 +4,7 @@ import datetime
 import time
 from time import mktime
 from eiger_io.fs_handler import EigerHandler
+from databroker.assets.handlers import AreaDetectorTiffHandler
 
 def file_sizes(hdrs, db):
 
@@ -54,10 +55,16 @@ def file_sizes(hdrs, db):
     print(total_time)
     return time_size
 
+def get_file_size(file_list):
+    sizes = []
+    for file in file_list:
+        sizes.append(os.path.getsize(file))
+    return sizes
 
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
+db.reg.register_handler("AD_TIFF", AreadetectorTIFFHandler)
 
 hdrs = iter(db(start_time="2016-08-19", stop_time="2016-08-22", plan_name='count'))
 
@@ -75,3 +82,16 @@ df.columns = ['file_size']
 df.index.name = 'timestamp'
 
 df.to_csv('chx_file_sizes.dat', sep=" ")
+
+resource_path = '/data/chx/tiff'
+resource_kwargs = {'template': '%s%s_%6.6d.tiff', 
+                   'filename': '6ef23c84-d8d5-4157-a0ee', 
+                   'frame_per_point': 1}
+datum_kwargs = {'point_number' : 0}
+
+fh = AreaDetectorTiffHandler(resource_path, **resource_kwargs)
+
+data = fh(**datum_kwargs)
+
+file_list = fh.get_file_list([datum_kwargs])
+file_size = get_file_size(file_list)
