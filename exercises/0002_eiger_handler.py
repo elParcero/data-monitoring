@@ -1,8 +1,11 @@
 from databroker import Broker
 import pandas as pd
+import os
+
 import datetime
 import time
 from time import mktime
+
 from eiger_io.fs_handler import EigerHandler
 from databroker.assets.handlers import AreaDetectorTiffHandler
 
@@ -59,12 +62,12 @@ def get_file_size(file_list):
     sizes = []
     for file in file_list:
         sizes.append(os.path.getsize(file))
-    return sizes
+    return sum(sizes)
 
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
-db.reg.register_handler("AD_TIFF", AreadetectorTIFFHandler)
+db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 hdrs = iter(db(start_time="2016-08-19", stop_time="2016-08-22", plan_name='count'))
 
