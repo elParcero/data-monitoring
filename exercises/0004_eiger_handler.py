@@ -1,6 +1,6 @@
 import os
 import numpy as np
-#from databroker.assets.handlers import AreaDetectorTiffHandler
+from databroker.assets.handlers import AreaDetectorTiffHandler
 
 
 class AreaDetectorTiffHandler():
