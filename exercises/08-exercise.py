@@ -3,6 +3,7 @@ Author: Jorge Diaz Jr
 Exercise 8
 '''
 import uuid
+import humanize
 import pandas as pd
 import os
 from databroker.tests.utils import temp_config
@@ -12,13 +13,22 @@ from databroker.assets.handlers_base import HandlerBase
 # this will create a temporary databroker object with nothing in it
 db = Broker.from_config(temp_config())
 
+# These transformations are the transformations necessary
+# to convert the hex values that come from the ADC's into units of Volts.
 fc = 7.62939453125e-05
-adc2counts = lambda x: ((int(x, 16) >> 8) - 0x40000) * fc \
-        if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
-enc2counts = lambda x: int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
 
 
-class PizzaBoxAnHandler(HandlerBase):
+def adc2counts(x):
+    return ((int(x, 16) >> 8) - 0x40000) * fc \
+            if (int(x, 16) >> 8) > 0x1FFFF else (int(x, 16) >> 8)*fc
+
+
+def enc2counts(x):
+    return int(x) if int(x) <= 0 else -(int(x) ^ 0xffffff - 1)
+
+
+class PizzaBoxANHandler():
+
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -30,27 +40,54 @@ class PizzaBoxAnHandler(HandlerBase):
         chunk_size: int (optional)
             user specifices size of chunk for data, default is 1024
         '''
+        self._name = resource_path
         self.chunks_of_data = []
-        for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
-                names =['time (s)', 'time (ns)', 'index', 'counts'], 
-                delimiter = " ", header=None):
-            chunk['adc'] = chunk['counts'].apply(adc2counts)
+        chunk = [data for data in pd.read_csv(resource_path,
+                 chunksize=chunk_size,
+                 delimiter=" ",
+                 header=None)]
+        num_cols = len(chunk[0].columns)
+        columns = ['time (s)', 'time (ns)', 'index']
+        columns_leftover = num_cols - len(columns)
+        columns = columns + [f'adc {i}' for i in range(columns_leftover)]
+
+        for chunk in chunk:
+            chunk.columns = columns
+            for column in range(columns_leftover):
+                chunk.iloc[:, column + 3] = \
+                            chunk.iloc[:, column + 3].apply(adc2counts)
             chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
-            chunk = chunk[['timestamp','adc']]
+            column_keys = ['timestamp'] + \
+                          [f'adc {i}' for i in range(columns_leftover)]
+            chunk = chunk[column_keys]
             self.chunks_of_data.append(chunk)
 
-    def __call__(self, chunk_num):
+    def __call__(self, chunk_num, column):
         '''
-        Returns 
+        Returns
         -------
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        result = self.chunks_of_data[chunk_num]
-        return result
+        cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
+                'counts': self.chunks_of_data[chunk_num][f'adc {column}']}
+        return pd.DataFrame(cols, columns=['timestamp', 'counts'])
 
-class PizzaBoxEnHandler(HandlerBase):
+    def get_file_size(self, datum_kwargs):
+        sizes = []
+        files = self.get_file_list(datum_kwargs)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
+
+    def get_file_list(self, datum_kwargs):
+        file_names = []
+        file_names.append(self._name)
+        return file_names
+
+
+class PizzaBoxENHandler():
+
     def __init__(self, resource_path, chunk_size=1024):
         '''
         adds the chunks of data to a list for specific file
@@ -62,19 +99,22 @@ class PizzaBoxEnHandler(HandlerBase):
         chunk_size: int (optional)
             user specifices size of chunk for data, default is 1024
         '''
+        self._name = resource_path
         self.chunks_of_data = []
-        for chunk in pd.read_csv(resource_path, chunksize=chunk_size, 
-                names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di'], 
-                delimiter = " ", header=None):
+        column_names = ['time (s)', 'time (ns)', 'encoder', 'index', 'di']
+        for chunk in pd.read_csv(resource_path,
+                                 chunksize=chunk_size,
+                                 names=column_names,
+                                 delimiter=" ",
+                                 header=None):
             chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
             chunk['encoder'] = chunk['encoder'].apply(enc2counts)
-            chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'di'])
             chunk = chunk[['timestamp', 'encoder']]
             self.chunks_of_data.append(chunk)
 
-    def __call__(self, chunk_num):
+    def __call__(self, chunk_num, column):
         '''
-        Returns 
+        Returns
         -------
         result: dataframe object
             specified chunk number/index from list of all chunks created
@@ -82,6 +122,17 @@ class PizzaBoxEnHandler(HandlerBase):
         result = self.chunks_of_data[chunk_num]
         return result
 
+    def get_file_size(self, datum_kwargs):
+        sizes = []
+        files = self.get_file_list(datum_kwargs)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
+
+    def get_file_list(self, datum_kwargs):
+        file_names = []
+        file_names.append(self._name)
+        return file_names
 
 
 def get_resource(resource_uid, filepath, filename):
@@ -137,7 +188,7 @@ def get_datum(datum_uid, resource_uid):
         dictionary that contains specific key,val arguments that relates to file
     '''
     datum = {'datum_id': datum_uid,
-    'datum_kwargs': {'chunk_num' : 0},
+    'datum_kwargs': {'chunk_num' : 0, 'column' : 0},
     'resource': resource_uid
     }
     return datum
@@ -451,23 +502,24 @@ def user_filechoice(filenames):
     filechoice = int(input("Choose number: ")) - 1
     return filechoice 
 
-
+#file path and filenames for both AN & EN files
 fPath = "/home/jdiaz/projects/data-monitoring/data/iss_sample_data/"
 an_filenames = [an for an in os.listdir(fPath) if an.startswith('an')]
 en_filenames = [en for en in os.listdir(fPath) if en.startswith('en')]
 
-
+# resources and datums for both AN & EN files
 an_resources, an_datums = gen_an_resources_datums(fPath, an_filenames)
 en_resources, en_datums = gen_en_resources_datums(fPath, en_filenames)
 
-
+# new resources and datums that were registered
 new_an_resources, new_an_datums = register_an_resources_datums(an_resources, an_datums)
 new_en_resources, new_en_datums = register_en_resources_datums(en_resources, en_datums)
 
 
-db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxAnHandler)
-db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxEnHandler)
 
+# handlers are being registered
+db.reg.register_handler("PIZZABOX_AN_FILE_TXT", PizzaBoxANHandler)
+db.reg.register_handler("PIZZABOX_EN_FILE_TXT", PizzaBoxENHandler)
 
 registered_an_resources = register_an_resources_given_datum_id(new_an_resources, new_an_datums)
 an_datums_generated = an_datums_generated_given_resources(new_an_datums)
@@ -476,16 +528,24 @@ an_datums_generated = an_datums_generated_given_resources(new_an_datums)
 registered_en_resources = register_en_resources_given_datum_id(new_en_resources, new_en_datums)
 en_datums_generated = en_datums_generated_given_resources(new_en_datums)
 
-
+# user gets to select file to work with and data is retrieved
 an_filechoice = user_filechoice(an_filenames)
-an_fh = PizzaBoxAnHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
+an_fh = PizzaBoxANHandler(resource_path=registered_an_resources[an_filechoice]['resource_path'],
     **registered_an_resources[an_filechoice]['resource_kwargs'])
 an_datum = an_datums_generated[an_filechoice]
-an_data = an_fh(**an_datum['datum_kwargs'])
+an_data = an_fh(**an_datum['datum_kwargs'] )
+an_size = an_fh.get_file_size(an_datum)
+an_files = an_fh.get_file_list(an_datum['datum_kwargs'])
+print(humanize.naturalsize(an_size[0]))
 
+print()
 
+# user gets to select file to work with and data is retrieved
 en_filechoice = user_filechoice(en_filenames)
-en_fh = PizzaBoxEnHandler(resource_path=registered_en_resources[en_filechoice]['resource_path'],
+en_fh = PizzaBoxENHandler(resource_path=registered_en_resources[en_filechoice]['resource_path'],
     **registered_en_resources[en_filechoice]['resource_kwargs'])
 en_datum = en_datums_generated[en_filechoice]
 en_data = en_fh(**en_datum['datum_kwargs'])
+en_size = en_fh.get_file_size(en_datum)
+en_files = en_fh.get_file_list(en_datum['datum_kwargs'])
+print(humanize.naturalsize(en_size[0]))
