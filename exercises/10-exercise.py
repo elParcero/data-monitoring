@@ -38,7 +38,7 @@ class NumpySeqHandler:
 
     def get_file_list(self, datum_kwarg_gen):
         #This method is optional. It is not needed for access, but for export.
-        return ['{name}_{index}.npy'.format(name=self._name, index =kwargs['datum_kwargs']['index']) #**kwargs
+        return ['{name}_{index}.npy'.format(name=self._name, **kwargs['index']) #**kwargs
                 for kwargs in datum_kwarg_gen]
 
 
@@ -83,7 +83,8 @@ sizes = []
 for resource in resources:
     fh = NumpySeqHandler(resource['resource_path'], resource['root'])
     datum_gen = db.reg.datum_gen_given_resource(resource)
-    file_list = fh.get_file_list(datum_gen)
+    datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+    file_list = fh.get_file_list(datum_kwargs_list)
     file_sizes = sum([os.path.getsize(filename) for filename in file_list])
     sizes.append(file_sizes)
 
