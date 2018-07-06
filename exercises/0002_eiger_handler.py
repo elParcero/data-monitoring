@@ -47,9 +47,10 @@ def file_sizes(hdrs, db):
                                     # get the file handler using this
                                     fh = db.reg.get_spec_handler(resource_id)
                                     print(fh)
-                                    file_sizes = sum(fh.get_file_sizes(datum_kwargs))
-                                    print(file_sizes)
-                                    time_size[timestamp] = file_sizes
+                                    file_list = fh.get_file_list(datum_kwargs)
+                                    file_size = sum([os.path.getsize(file) for file in file_list])
+                                    print(file_size)
+                                    time_size[timestamp] = file_size
                 except StopIteration:
                     break
 #               except KeyError:
