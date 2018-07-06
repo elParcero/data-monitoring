@@ -36,7 +36,7 @@ def get_file_size(file_list):
     sizes = []
     for file in file_list:
         sizes.append(os.path.getsize(file))
-    return sizes
+    return sum(sizes)
 
 resource_path = '/data/chx/tiff'
 resource_kwargs = {'template': '%s%s_%6.6d.tiff', 
@@ -49,4 +49,4 @@ fh = AreaDetectorTiffHandler(resource_path, **resource_kwargs)
 data = fh(**datum_kwargs)
 
 file_list = fh.get_file_list([datum_kwargs])
-file_size = sum(get_file_size(file_list))
+file_size = get_file_size(file_list)
