@@ -49,4 +49,4 @@ fh = AreaDetectorTiffHandler(resource_path, **resource_kwargs)
 data = fh(**datum_kwargs)
 
 file_list = fh.get_file_list([datum_kwargs])
-file_size = get_file_size(file_list)
+file_size = sum(get_file_size(file_list))
