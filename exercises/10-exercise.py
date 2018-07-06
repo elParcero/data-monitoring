@@ -38,26 +38,12 @@ class NumpySeqHandler:
 
     def get_file_list(self, datum_kwarg_gen):
         #This method is optional. It is not needed for access, but for export.
-        return ['{name}_{index}.npy'.format(name=self._name, **kwargs['index']) #**kwargs
+        return ['{name}_{index}.npy'.format(name=self._name, index =kwargs['datum_kwargs']['index']) #**kwargs
                 for kwargs in datum_kwarg_gen]
-
-
-    def get_file_size(self, datum_gen):
-        
-        sizes = list()
-
-        for datum in datum_gen:
-        	index = datum['datum_kwargs']['index']
-        	filename = f'{self._name}_{index}.npy'
-        	size = os.path.getsize(filename)
-        	sizes.append(humanize.naturalsize(size))
-        	
-        return sizes
 
 
 events = []
 datum_ids = []
-
 
 db = Broker.from_config(temp_config())
 
@@ -90,14 +76,15 @@ resources = list()
 for i in range(len(datum_ids)):
     resource = db.reg.resource_given_datum_id(datum_ids[i])
     resources.append(resource)
-    #resources.add(resource['id'])
-   
+
 sizes = []
 # initialize a file handler
 # then retrieve the size for that specific file
 for resource in resources:
-	fh = NumpySeqHandler(resource['resource_path'], resource['root'])
-	datum_gen = db.reg.datum_gen_given_resource(resource)
-	sizes.append(fh.get_file_size(datum_gen))
-    
+    fh = NumpySeqHandler(resource['resource_path'], resource['root'])
+    datum_gen = db.reg.datum_gen_given_resource(resource)
+    file_list = fh.get_file_list(datum_gen)
+    file_sizes = sum([os.path.getsize(filename) for filename in file_list])
+    sizes.append(file_sizes)
+
 print(sizes)
