@@ -47,12 +47,15 @@ def file_sizes(hdrs, db):
                                     # get the file handler using this
                                     fh = db.reg.get_spec_handler(resource_id)
                                     print(fh)
-                                    file_list = fh.get_file_list(datum_kwargs)
-                                    file_size = get_file_size(file_list)
+                                    try:
+                                        file_list = fh.get_file_list(datum_kwargs)
+                                        file_size = get_file_size(file_list)
+                                    except KeyError:
+                                        file_size = 0
                                     print(file_size)
                                     time_size[timestamp] = file_size
                 except StopIteration:
-#                   continue
+                  break 
     end_time = time.time()
     total_time = end_time - start_time
     print(total_time)
@@ -70,19 +73,17 @@ db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
-plan_names = ['count', 'scan', 'rel_scan']
+# plan_names = ['count', 'scan', 'rel_scan']
+plan_names = ['scan', 'rel_scan']
+
 hdrs = []
 for plan in plan_names:
-    hdrs.append(iter(db(start_time="2015-01-01", stop_time="2017-10-21", plan_name = plan)))
+    hdrs.append(iter(db(since="2017-01-01", until="2018-07-31", plan_name = plan)))
 
-# first two are bad, so I'm skipping them
-
-# good one
-# hdr = next(hdrs)
 f_sizes = []
 for i in range(3):
     f_sizes.append(file_sizes(hdrs[i], db))
-
+'''
 def make_dfs(file_sizes):
     dfs = []
     for file in file_sizes:
@@ -93,7 +94,7 @@ def make_dfs(file_sizes):
     return dfs
 
 dfs = make_dfs(f_sizes)
-
+'''
 
 '''    
 # make dataframe
