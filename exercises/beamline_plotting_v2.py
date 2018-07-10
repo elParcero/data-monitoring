@@ -88,20 +88,18 @@ def plot_usage_versus_day(newdfs, file_names):
 def plot_usage_versus_week(newdfs, file_names):
     plt.clf()
     color_cycle = cycler(color=['r', 'g', 'b'])
-    index = 0
     beamline = [file.upper().split('-', 1)[0] for file in file_names]
 
     newdfs = [newdf.resample('W').sum() for newdf in newdfs]
     newdfs = [newdf.cumsum() for newdf in newdfs]
 
     for i in range(len(newdfs)):
-        fig, ax= plt.subplots()
+        fig, ax = plt.subplots()
         print(i)
         for column, color in zip(newdfs[i].columns, color_cycle):
             df = newdfs[i][column]
-            plt.bar(df.index, df * 1e-9, width=7,alpha= 0.6,
-                        color = color['color'],
-                        label = column)
+            plt.bar(df.index, df * 1e-9, width=7, alpha=0.6,
+                    color=color['color'], label=column)
 
             ax.set_xlabel('Time (weekly)')
             ax.set_ylabel('Usage (GB)')
@@ -110,28 +108,25 @@ def plot_usage_versus_week(newdfs, file_names):
             ax.xaxis.set_major_formatter(yearsFmt)
             ax.xaxis.set_minor_locator(months)
             plt.show()
-            plt.legend(loc = 2)
-            #plt.savefig(beamline[i] + "_weekly_cumulative.png")
+            plt.legend(loc=2)
+#           plt.savefig(beamline[i] + "_weekly_cumulative.png")
+
 
 def plot_usage_versus_month(newdfs, file_names):
     plt.clf()
     color_cycle = cycler(color=['r', 'g', 'b'])
-    index = 0
-    beamline = [file.upper().split('-',1)[0] for file in file_names]
+    beamline = [file.upper().split('-', 1)[0] for file in file_names]
 
     newdfs = [newdf.resample('M').sum() for newdf in newdfs]
     newdfs = [newdf.cumsum() for newdf in newdfs]
 
     for i in range(len(newdfs)):
-        fig, ax= plt.subplots()
+        fig, ax = plt.subplots()
         print(i)
-        for column,color in zip(newdfs[i].columns, color_cycle):
+        for column, color in zip(newdfs[i].columns, color_cycle):
             df = newdfs[i][column]
-            plt.bar( df.index, df * 1e-9 ,
-                        width = 31, alpha = 0.6,
-                        color = color['color'],
-                        label = column)
-
+            plt.bar(df.index, df * 1e-9, width=31, alpha=0.6,
+                    color=color['color'], label=column)
             ax.set_xlabel('Time (monthly)')
             ax.set_ylabel('Usage (GB)')
             ax.set_title(beamline[i].upper())
@@ -139,8 +134,9 @@ def plot_usage_versus_month(newdfs, file_names):
             ax.xaxis.set_major_formatter(yearsFmt)
             ax.xaxis.set_minor_locator(months)
             plt.show()
-            plt.legend(loc = 2)
-            #plt.savefig(beamline[i] + "_monthly_cumulative.png")
+            plt.legend(loc=2)
+#           plt.savefig(beamline[i] + "_monthly_cumulative.png")
+
 
 file_path = '/home/jdiaz/beamline_plotting/beamline_file_sizes_v2/'
 parent_files = os.listdir(file_path)
@@ -150,13 +146,13 @@ for i in range(len(parent_files)):
     child_files = os.listdir(file_path + parent_files[i])
     files[parent_files[i]] = child_files
 
-file_size, det_names= readin_file(files, file_path, parent_files)
+file_size, det_names = readin_file(files, file_path, parent_files)
 dfs = create_df(file_size, det_names)
 newdfs = []
 
 for key in dfs:
-    newdfs.append(pd.concat(dfs[key], axis = 1))
+    newdfs.append(pd.concat(dfs[key], axis=1))
 
 plot_usage_versus_day(newdfs, list(files.keys()))
-#plot_usage_versus_week(newdfs, list(files.keys()))
-#plot_usage_versus_month(newdfs, list(files.keys()))
+# plot_usage_versus_week(newdfs, list(files.keys()))
+# plot_usage_versus_month(newdfs, list(files.keys()))
