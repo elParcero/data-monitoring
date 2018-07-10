@@ -40,7 +40,10 @@ def file_sizes(hdrs, db):
                                     else:
                                         unique_resources.add(resource_id)
                                     datum_gen = db.reg.datum_gen_given_resource(resource_id)
-                                    datum_kwargs = [datum['datum_kwargs'] for datum in datum_gen]
+                                    try:
+                                        datum_kwargs = [datum['datum_kwargs'] for datum in datum_gen]
+                                    except TypeError:
+                                        print('TypeError ... ignore ...')
                                     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(event['time'])))
                                     timestamp = time.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
                                     timestamp = datetime.datetime.fromtimestamp(mktime(timestamp))
@@ -55,7 +58,10 @@ def file_sizes(hdrs, db):
                                     print(file_size)
                                     time_size[timestamp] = file_size
                 except StopIteration:
-                  break 
+                    break 
+                except KeyError:
+                    print('key error' * 5)
+                    continue 
     end_time = time.time()
     total_time = end_time - start_time
     print(total_time)
@@ -71,38 +77,33 @@ def get_file_size(file_list):
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
+db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
-# plan_names = ['count', 'scan', 'rel_scan']
-plan_names = ['scan', 'rel_scan']
+plan_names = ['count', 'scan', 'rel_scan']
+# plan_names = ['scan', 'rel_scan']
+# plan_names = ['rel_scan']
 
-hdrs = []
-for plan in plan_names:
-    hdrs.append(iter(db(since="2017-01-01", until="2018-07-31", plan_name = plan)))
+hdrs = dict()
 
-f_sizes = []
-for i in range(3):
-    f_sizes.append(file_sizes(hdrs[i], db))
-'''
+
+f_sizes = dict()
+for key in hdrs:
+    f_sizes[key] = file_sizes(hdrs[key], db)
+
 def make_dfs(file_sizes):
-    dfs = []
-    for file in file_sizes:
-        df = pd.DataFrame.from_dict(file, orient='index')
-        df.columns = ['file_size']
-        df.index.name = 'timestamp'
-        dfs.append(df)
+    dfs = dict()
+    for key in file_sizes:
+        if file_sizes[key]:
+            df = pd.DataFrame.from_dict(file_sizes[key], orient='index')
+            df.index.name = 'timestamp'
+            df.columns = [key + "(file_size)"]
+            dfs[key] = df
     return dfs
 
 dfs = make_dfs(f_sizes)
-'''
 
-'''    
-# make dataframe
-df = pd.DataFrame.from_dict(file_sizes_, orient='index')
-df.columns = ['file_size']
-df.index.name = 'timestamp'
-
-df.to_csv('chx_file_sizes.dat', sep=" ")
-'''
-
+for key in dfs:
+    if len(dfs[key].index) != 0:
+        dfs[key].to_csv('chx_{0}_{1}.dat'.format(key,'filesize'), sep=" ")
 
