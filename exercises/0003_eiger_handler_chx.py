@@ -1,4 +1,4 @@
-#0003
+# 0003
 from databroker import Broker
 import pandas as pd
 import os
@@ -10,11 +10,10 @@ from time import mktime
 from eiger_io.fs_handler import EigerHandler
 from databroker.assets.handlers import AreaDetectorTiffHandler
 
-def file_sizes(hdrs, db):
 
+def file_sizes(hdrs, db):
     unique_resources = set()
     time_size = dict()
-    file_sizes = list()
     FILESTORE_KEY = "FILESTORE:"
     start_time = time.time()
     timestamp = 0.0
@@ -58,14 +57,15 @@ def file_sizes(hdrs, db):
                                     print(file_size)
                                     time_size[timestamp] = file_size
                 except StopIteration:
-                    break 
+                    break
                 except KeyError:
                     print('key error' * 5)
-                    continue 
+                    continue
     end_time = time.time()
     total_time = end_time - start_time
     print(total_time)
     return time_size
+
 
 def get_file_size(file_list):
     sizes = []
@@ -74,6 +74,7 @@ def get_file_size(file_list):
             sizes.append(os.path.getsize(file))
     return sum(sizes)
 
+
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
@@ -81,15 +82,17 @@ db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 plan_names = ['count', 'scan', 'rel_scan']
-# plan_names = ['scan', 'rel_scan']
-# plan_names = ['rel_scan']
 
 hdrs = dict()
-
+hdrs = dict()
+for plan in plan_names:
+    hdrs[plan] = iter(db(since="2015-01-01", until="2018-12-31",
+                         plan_name=plan))
 
 f_sizes = dict()
 for key in hdrs:
     f_sizes[key] = file_sizes(hdrs[key], db)
+
 
 def make_dfs(file_sizes):
     dfs = dict()
@@ -101,9 +104,11 @@ def make_dfs(file_sizes):
             dfs[key] = df
     return dfs
 
+
+# dictionary where key = plan name & value = dataframe
 dfs = make_dfs(f_sizes)
 
+# store data to csv file
 for key in dfs:
     if len(dfs[key].index) != 0:
-        dfs[key].to_csv('chx_{0}_{1}.dat'.format(key,'filesize'), sep=" ")
-
+        dfs[key].to_csv('chx_{0}_{1}.dat'.format(key, 'filesize'), sep=" ")
