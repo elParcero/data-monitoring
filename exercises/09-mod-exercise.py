@@ -124,8 +124,8 @@ def plot_usage_versus_month(dfs, file_names):
         show(p)
 
 
-#plot_usage_versus_day(dfs, file_names)
+plot_usage_versus_day(dfs, file_names)
 
-#plot_usage_versus_week(dfs, file_names)
+plot_usage_versus_week(dfs, file_names)
 
-#plot_usage_versus_month(dfs, file_names)
+plot_usage_versus_month(dfs, file_names)
