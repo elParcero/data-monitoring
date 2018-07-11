@@ -20,13 +20,12 @@ def readin_files(file_path, dat_files):
     return data
 
 
-def plot_usage(data):
+def plot_usage(data, resample='W'):
     plt.clf()
 
     for key, dat in data.items():
         col_name = dat.columns.values[0]
-#       dat = dat.resample('W').sum()
-        dat = dat.resample('H').sum()
+        dat = dat.resample(resample).sum()
         dat = dat.cumsum()
         print(dat)
         fig, ax = plt.subplots()
@@ -78,19 +77,19 @@ def bar_plot_hourly_sum(hourly_sum):
         plt.savefig('{}_bar_hourly.png'.format(key))
 
 
-def hourly_sum(data):
+def resample_sum(data, sampling='H'):
     hourly_sum = dict()
     for key, dat in data.items():
-        dat = dat.resample('H').sum()
+        dat = dat.resample(sampling).sum()
         dat = dat.groupby(dat.index.hour).sum()
         hourly_sum[key] = dat
     return hourly_sum
 
 
-def average_sum(data):
+def average_sum(data, sampling='H'):
     average_sum = dict()
     for key, dat in data.items():
-        dat = dat.resample('H').sum()
+        dat = dat.resample(sampling).sum()
         dat = dat.groupby(dat.index.hour).mean()
         average_sum[key] = dat
     return average_sum
@@ -107,7 +106,7 @@ data = readin_files(file_path, dat_files)
 
 # plot_usage(data)
 
-hourly_sum = hourly_sum(data)
+hourly_sum = resample_sum(data)
 '''
 #for key, data in hourly_sum.items():
 #    print(key)
