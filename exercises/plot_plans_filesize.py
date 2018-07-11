@@ -7,9 +7,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-years = mdates.YearLocator()    # every year
-months = mdates.MonthLocator()  # every month
-yearsFmt = mdates.DateFormatter('%Y')
 plt.ion()
 
 
