@@ -38,11 +38,15 @@ def plot_usage(data):
 
     for key, dat in data.items():
         col_name = dat.columns.values[0]
-        dat = dat.resample('W').sum()
+#       dat = dat.resample('W').sum()
+        dat = dat.resample('H').sum()
         dat = dat.cumsum()
+        print(dat)
         fig, ax = plt.subplots()
-        plt.bar(dat.index, dat[col_name] * 1e-9, width=7,
-                label=col_name.upper(), color='navy')
+#        plt.bar(dat.index, dat[col_name] * 1e-9, width=7,
+#               label=col_name.upper(), color='navy')
+        plt.plot(dat.index, dat[col_name] * 1e-9,
+               label=col_name.upper(), color='navy')
         ax.set_xlabel('Time (daily)')
         ax.set_ylabel('Usage (GB)')
         ax.set_title(key)
