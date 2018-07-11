@@ -28,8 +28,36 @@ def readin_files(file_path, dat_files):
         data[file.replace('.dat', '').upper()] = df
     return data
 
-file_path = '/home/jdiaz/beamline_plans_filesize'
+file_path = '/Users/jdiaz/data-monitoring/plans_chx_plots'
 dat_files = [dat_file for dat_file in os.listdir(file_path) if dat_file.endswith('.dat')]
 
+# files read in and saved as dataframes
 data = readin_files(file_path, dat_files)
+
+
+def plot_usage_versus_day(data):
+    plt.clf()
+    keys = [k for k in data]
+
+    for key in data:
+        fig, ax = plt.subplots()
+        plt.bar(data[key].index, data[key] * 1e-9, width=1, alpha=0.6,
+                color='r', label=data[key].columns)
+        ax.set_xlabel('Time (daily)')
+        ax.set_ylabel('Usage (GB)')
+        ax.set_title(key)
+        ax.xaxis.set_major_locator(years)
+        ax.xaxis.set_major_formatter(yearsFmt)
+        ax.xaxis.set_minor_locator(months)
+        plt.show()
+        plt.legend(loc=2)
+
+
+plot_usage_versus_day(data)
+
+
+
+
+
+
 
