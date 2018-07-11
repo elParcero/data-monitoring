@@ -46,15 +46,6 @@ def plot_usage(data):
 #        plt.savefig(key + '.png')
 
 
-def hourly_sum(data):
-    hourly_sum = dict()
-    for key, dat in data.items():
-        dat = dat.resample('H').sum()
-        dat = dat.groupby(dat.index.hour).sum()
-        hourly_sum[key] = dat
-    return hourly_sum
-
-
 def line_plot_hourly_sum(hourly_sum):
     labels = range(24)
     for key, data in hourly_sum.items():
@@ -62,9 +53,9 @@ def line_plot_hourly_sum(hourly_sum):
         fig, ax = plt.subplots()
         plt.plot(data.index, data[col_name] * 1e-9,
                  label=col_name.upper(), color='navy')
-        ax.set_xlabel('Time (daily)')
+        ax.set_xlabel('Time (hourly)')
         ax.set_ylabel('Usage (GB)')
-        ax.set_title(key)
+        ax.set_title('{} : HOURLY SUM'.format(key))
         ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
         plt.show()
         plt.legend(loc=2)
@@ -78,13 +69,31 @@ def bar_plot_hourly_sum(hourly_sum):
         fig, ax = plt.subplots()
         plt.bar(data.index, data[col_name] * 1e-9, width=0.5,
                 label=col_name.upper(), color='navy')
-        ax.set_xlabel('Time (daily)')
+        ax.set_xlabel('Time (hourly)')
         ax.set_ylabel('Usage (GB)')
-        ax.set_title(key)
+        ax.set_title('{} : HOURLY SUM'.format(key))
         ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
         plt.show()
         plt.legend(loc=2)
         plt.savefig('{}_bar_hourly.png'.format(key))
+
+
+def hourly_sum(data):
+    hourly_sum = dict()
+    for key, dat in data.items():
+        dat = dat.resample('H').sum()
+        dat = dat.groupby(dat.index.hour).sum()
+        hourly_sum[key] = dat
+    return hourly_sum
+
+
+def average_sum(data):
+    average_sum = dict()
+    for key, dat in data.items():
+        dat = dat.resample('H').sum()
+        dat = dat.groupby(dat.index.hour).mean()
+        average_sum[key] = dat
+    return average_sum
 
 
 file_path = '/home/jdiaz/projects/data-monitoring/exercises/plan_plots'
@@ -93,15 +102,39 @@ dat_files = [dat_file for dat_file in os.listdir(file_path)
 
 # files read in and saved as dataframes
 data = readin_files(file_path, dat_files)
-
 # for key, dat in data.items():
 #    dat.to_csv('{}_V2.dat'.format(key), sep=" ")
 
 # plot_usage(data)
-hourly_sum = hourly_sum(data)
-for key, data in hourly_sum.items():
-    print(key)
-    data.to_csv('{}_hourly_sum.dat'.format(key.lower()), sep=' ')
 
-# line_plot_hourly_sum(hourly_sum)
-# bar_plot_hourly_sum(hourly_sum)
+hourly_sum = hourly_sum(data)
+'''
+#for key, data in hourly_sum.items():
+#    print(key)
+#    data.to_csv('{}_hourly_sum.dat'.format(key.lower()), sep=' ')
+
+
+average_sum = average_sum(data)
+for key, data in average_sum.items():
+    print(key)
+    data.to_csv('{}_hourly_average.dat'.format(key.lower()), sep=' ')
+'''
+line_plot_hourly_sum(hourly_sum)
+bar_plot_hourly_sum(hourly_sum)
+
+def line_plot_average_sum(average_sum):
+    labels = range(24)
+    for key, data in average_sum.items():
+        col_name = data.columns.values[0]
+        fig, ax = plt.subplots()
+        plt.plot(data.index, data[col_name] * 1e-9,
+                 label=col_name.upper(), color='navy')
+        ax.set_xlabel('Time (hourly)')
+        ax.set_ylabel('Usage (GB)')
+        ax.set_title('{} : Average per Hour'.format(key) )
+        ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
+        plt.show()
+        plt.legend(loc=2)
+        #plt.savefig('{}_line_hourly_mean.png'.format(key))
+
+# line_plot_average_sum(average_sum)
