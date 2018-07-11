@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 import pandas as pd
+import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -19,41 +20,45 @@ def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
 def readin_files(file_path, dat_files):
-    #data = []
     data = dict()
     for file in dat_files:
         df = pd.read_csv(file_path + '/' + file, sep=" ")
-        df.index = pd.to_datetime(df['timestamp'])
-        del df['timestamp']
-        data[file.replace('.dat', '').upper()] = df
+        df.index = pd.to_datetime(df.pop('timestamp'))
+        data[file.replace('.dat', '').replace('_FILESIZE_V2','').upper()] = df
     return data
 
-file_path = '/Users/jdiaz/data-monitoring/plans_chx_plots'
+file_path = '/home/jdiaz/projects/data-monitoring/exercises/plan_plots'
 dat_files = [dat_file for dat_file in os.listdir(file_path) if dat_file.endswith('.dat')]
 
 # files read in and saved as dataframes
 data = readin_files(file_path, dat_files)
 
+#for key, dat in data.items():
+#    dat.to_csv('{}_V2.dat'.format(key), sep=" ")
 
-def plot_usage_versus_day(data):
+def plot_usage(data):
     plt.clf()
     keys = [k for k in data]
 
-    for key in data:
+    for key, dat in data.items():
+        col_name = dat.columns.values[0]
+        dat = dat.resample('W').sum()
+        dat = dat.cumsum()
         fig, ax = plt.subplots()
-        plt.bar(data[key].index, data[key] * 1e-9, width=1, alpha=0.6,
-                color='r', label=data[key].columns)
+        plt.bar(dat.index, dat[col_name] * 1e-9, width=7, label=col_name.upper(), color='navy')
         ax.set_xlabel('Time (daily)')
         ax.set_ylabel('Usage (GB)')
         ax.set_title(key)
-        ax.xaxis.set_major_locator(years)
-        ax.xaxis.set_major_formatter(yearsFmt)
-        ax.xaxis.set_minor_locator(months)
+        fig.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
         plt.show()
         plt.legend(loc=2)
+        plt.savefig(key + '.png')
 
 
-plot_usage_versus_day(data)
+plot_usage(data)
 
 
 
