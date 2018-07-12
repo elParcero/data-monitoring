@@ -45,7 +45,10 @@ def find_keys(hdrs, db):
                                         datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
                                     except TypeError:
                                         print('type error ... ignore')
-                                    fh = db.reg.get_spec_handler(resource_id)
+                                    try:
+                                        fh = db.reg.get_spec_handler(resource_id)
+                                    except OSError:
+                                        print('os error')
                                     try:
                                         file_lists = fh.get_file_list(datum_kwargs_list)
                                         file_sizes = get_file_size(file_lists)
@@ -72,9 +75,10 @@ def get_file_size(file_list):
 def readin_file(file_path):
     chx_keys = set()
     df = pd.read_csv(file_path, sep=' ')
-    for det in df['detector']:
-        chx_keys.add(det)
-    return list(chx_keys)
+    df.index = df.pop('detector')
+    #for det in df['detector']:
+    #    chx_keys.add(det)
+    return list(chx_keys), df
 
 def plot_det_filesize(df):
     plt.ion()
@@ -84,8 +88,9 @@ def plot_det_filesize(df):
     
     col_name = list(df.columns.values)[0]
 
-    plt.plot(df.index, df[col_name] * 1e-9, label = 'CHX detectors')
-    fig.autofmt_xdate(bottom=0.5, rotation=57, ha='right')
+    plt.bar(df.index,  df[col_name] * 1e-9, label = 'CHX Detectors')
+    #plt.plot(df.index, df[col_name] * 1e-9, label = 'CHX detectors')
+    fig.autofmt_xdate(bottom=0.55, rotation=57, ha='right')
     ax.set_xlabel('Detectors')
     ax.set_ylabel('File Usage (GB)')
     ax.set_title('CHX Detectors')
@@ -94,7 +99,13 @@ def plot_det_filesize(df):
 
 
 file_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors.dat'
-chx_keys = readin_file(file_path)
+# chx_keys, _ = readin_file(file_path)
+
+
+f_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors_filesize.dat'
+_, f_size = readin_file(f_path)
+plot_det_filesize(f_size)
+
 
 
 db = Broker.named("chx")
@@ -106,8 +117,8 @@ db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 hdrs = db(since="2015-01-01", until="2018-12-31")
 
+'''
 keys_dict, files = find_keys(hdrs, db)
-
 
 df = pd.DataFrame.from_dict(keys_dict, orient='index')
 df.index.name = 'detector'
@@ -115,4 +126,7 @@ df.columns = ['file_size_usage']
 
 plot_det_filesize(df)
 df.to_csv('chx_detectors_filesize.dat', sep=' ')
+'''
+
+
 
