@@ -44,16 +44,16 @@ def find_keys(hdrs, db):
                                     try:
                                         datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
                                     except TypeError:
-                                        print('type error ... ignore')
+                                        print('type error for resource: {}'.format(resource))
                                     try:
                                         fh = db.reg.get_spec_handler(resource_id)
                                     except OSError:
-                                        print('os error')
+                                        print('os error for resource: {}'.format(resource))
                                     try:
                                         file_lists = fh.get_file_list(datum_kwargs_list)
                                         file_sizes = get_file_size(file_lists)
                                     except KeyError:
-                                        print('key error')
+                                        print('key error for datum kwargs: {}'.format(datum_kwargs_list))
                                     files.append(file_sizes)
                                     keys_dict[key] += file_sizes
                                     print(key)
