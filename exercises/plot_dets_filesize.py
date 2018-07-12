@@ -41,10 +41,16 @@ def find_keys(hdrs, db):
                                     resource = db.reg.resource_given_datum_id(datum_id)
                                     resource_id = resource['uid']
                                     datum_gen = db.reg.datum_gen_given_resource(resource)
-                                    datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+                                    try:
+                                        datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+                                    except TypeError:
+                                        print('type error ... ignore')
                                     fh = db.reg.get_spec_handler(resource_id)
-                                    file_lists = fh.get_file_list(datum_kwargs_list)
-                                    file_sizes = get_file_size(file_lists)
+                                    try:
+                                        file_lists = fh.get_file_list(datum_kwargs_list)
+                                        file_sizes = get_file_size(file_lists)
+                                    except KeyError:
+                                        print('key error')
                                     files.append(file_sizes)
                                     keys_dict[key] += file_sizes
                                     print(key)
@@ -98,7 +104,7 @@ db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 
-hdrs = db(since="2018-01-01", until="2018-12-31")
+hdrs = db(since="2015-01-01", until="2018-12-31")
 
 keys_dict, files = find_keys(hdrs, db)
 
@@ -108,5 +114,5 @@ df.index.name = 'detector'
 df.columns = ['file_size_usage']
 
 plot_det_filesize(df)
-#df.to_csv('chx_detectors.dat', sep=' ')
+df.to_csv('chx_detectors_filesize.dat', sep=' ')
 
