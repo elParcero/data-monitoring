@@ -10,11 +10,8 @@ from time import mktime
 from eiger_io.fs_handler import EigerHandler
 from databroker.assets.handlers import AreaDetectorTiffHandler
 
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.ticker as ticker
+from pymongo.errors import CursorNotFound
 
-from collections import defaultdict
 
 def find_keys(hdrs, db):
     '''
@@ -23,51 +20,43 @@ def find_keys(hdrs, db):
     '''
     FILESTORE_KEY = "FILESTORE:"
     keys_dict = dict()
-    
-#    try:
-    for hdr in hdrs:
-        for stream_name in hdr.stream_names:
-            events = hdr.events(stream_name=stream_name)
-            events = iter(events)
-            while True:
-                try:
-                    event = next(events)
-                    if "filled" in event:
-                        # there are keys that may not be filled
-                        for key, val in event['filled'].items():
-                            if not val:
-                                # get the datum
-                                if key in event['data']:
-                                    datum_id = event['data'][key]
-                                    try:
+
+    files = []
+
+    hdr = iter(hdrs)
+    while True:
+        try:
+            for stream_name in hdr.stream_names:
+                events = hdr.events(stream_name=stream_name)
+                events = iter(events)
+                while True:
+                    try:
+                        event = next(events)
+                        if "filled" in event:
+                            # there are keys that may not be filled
+                            for key, val in event['filled'].items():
+                                if key not in keys_dict and not val:
+                                    # get the datum
+                                    if key in event['data']:
+                                        datum_id = event['data'][key]
                                         resource = db.reg.resource_given_datum_id(datum_id)
-                                    except:
-                                        print('No datum found for : {}'.format(datum_id))
-                                    resource_id = resource['uid']
-                                    datum_gen = db.reg.datum_gen_given_resource(resource)
-                                    try:
+                                        resource_id = resource['uid']
+                                        keys_dict[key] = resource['spec']
+                                        datum_gen = db.reg.datum_gen_given_resource(resource)
                                         datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
-                                    except TypeError:
-                                        print('type error for resource: {}'.format(resource))
-                                    try:
                                         fh = db.reg.get_spec_handler(resource_id)
-                                    except OSError:
-                                        print('os error for resource: {}'.format(resource))
-                                    try:
                                         file_lists = fh.get_file_list(datum_kwargs_list)
                                         file_sizes = get_file_size(file_lists)
-                                    except KeyError:
-                                        print('key error for datum kwargs: {}'.format(datum_kwargs_list))
-                                    keys_dict[key] = keys_dict[key] + file_sizes
-                                    print('{} : {}'.format(key, file_sizes))
-                except StopIteration:
-                    break
-                except KeyError:
-                    continue
-#    except Exception e:
-#        print('CursorNotFound for hdr: {}{}'.format(hdr, e))
-         
-    return keys_dict 
+                                        files.append(file_sizes)
+                                        print(key)
+                    except StopIteration:
+                        break
+                    except KeyError:
+                        continue
+        except CursorNotFound:
+            print('CursorNotFound = {}'.format(hdr))
+    return keys_dict, files
+
 
 
 def get_file_size(file_list):
@@ -131,7 +120,3 @@ df.columns = ['file_size_usage']
 
 plot_det_filesize(df)
 #df.to_csv('chx_detectors_filesize.dat', sep=' ')
-
-
-
-
