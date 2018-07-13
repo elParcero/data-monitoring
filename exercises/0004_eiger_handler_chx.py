@@ -30,6 +30,7 @@ def file_sizes(hdrs, db, detector):
                                 if not val:
                                     # get the datum
                                     if key in event['data']:
+                                        print('level 3')
                                         if key == detector:
                                             print('{} = {}'.format(key, detector))
                                             datum_id = event['data'][key]
@@ -89,6 +90,6 @@ det_size = dict()
 #hdrs = iter(db(since='2018-04-27', until='2018-12-31', plan_name=plan_names[0]))
 for plan in plan_names:
     for detector in detector_names:
-        hdrs = iter(db(since='2017-04-27', until='2018-12-31', plan_name=plan))
-        det_size['{}:{}'.format(plan, detector)] =file_sizes(hdrs, db, detector)
+        hdrs = iter(db(since='2015-01-01', until='2018-12-31', plan_name=plan))
+        det_size['{}:{}'.format(plan, detector)] = file_sizes(hdrs, db, detector)
 
