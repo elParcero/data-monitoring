@@ -22,8 +22,9 @@ def find_keys(hdrs, db):
         database, and gathers the SPEC id's from them.
     '''
     FILESTORE_KEY = "FILESTORE:"
-    keys_dict = defaultdict(lambda : int(0))
-    files = []
+    keys_dict = dict()
+    
+#    try:
     for hdr in hdrs:
         for stream_name in hdr.stream_names:
             events = hdr.events(stream_name=stream_name)
@@ -34,11 +35,14 @@ def find_keys(hdrs, db):
                     if "filled" in event:
                         # there are keys that may not be filled
                         for key, val in event['filled'].items():
-                            if key not in keys_dict and not val:
+                            if not val:
                                 # get the datum
                                 if key in event['data']:
                                     datum_id = event['data'][key]
-                                    resource = db.reg.resource_given_datum_id(datum_id)
+                                    try:
+                                        resource = db.reg.resource_given_datum_id(datum_id)
+                                    except:
+                                        print('No datum found for : {}'.format(datum_id))
                                     resource_id = resource['uid']
                                     datum_gen = db.reg.datum_gen_given_resource(resource)
                                     try:
@@ -54,14 +58,16 @@ def find_keys(hdrs, db):
                                         file_sizes = get_file_size(file_lists)
                                     except KeyError:
                                         print('key error for datum kwargs: {}'.format(datum_kwargs_list))
-                                    files.append(file_sizes)
-                                    keys_dict[key] += file_sizes
-                                    print(key)
+                                    keys_dict[key] = keys_dict[key] + file_sizes
+                                    print('{} : {}'.format(key, file_sizes))
                 except StopIteration:
                     break
                 except KeyError:
                     continue
-    return keys_dict, files
+#    except Exception e:
+#        print('CursorNotFound for hdr: {}{}'.format(hdr, e))
+         
+    return keys_dict 
 
 
 def get_file_size(file_list):
@@ -103,8 +109,8 @@ file_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors.dat'
 
 
 f_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors_filesize.dat'
-_, f_size = readin_file(f_path)
-plot_det_filesize(f_size)
+#_, f_size = readin_file(f_path)
+#plot_det_filesize(f_size)
 
 
 
@@ -115,18 +121,17 @@ db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 
-hdrs = db(since="2015-01-01", until="2018-12-31")
+hdrs = db(since="2015-01-01", until="2017-01-01")
 
-'''
-keys_dict, files = find_keys(hdrs, db)
+keys_dict = find_keys(hdrs, db)
 
 df = pd.DataFrame.from_dict(keys_dict, orient='index')
 df.index.name = 'detector'
 df.columns = ['file_size_usage']
 
 plot_det_filesize(df)
-df.to_csv('chx_detectors_filesize.dat', sep=' ')
-'''
+#df.to_csv('chx_detectors_filesize.dat', sep=' ')
+
 
 
 
