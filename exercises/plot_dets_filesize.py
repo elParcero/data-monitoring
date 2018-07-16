@@ -23,8 +23,8 @@ def find_keys(hdrs, db):
 
     files = []
 
-    hdr = iter(hdrs)
     while True:
+        hdr = iter(hdrs)
         try:
             for stream_name in hdr.stream_names:
                 events = hdr.events(stream_name=stream_name)
