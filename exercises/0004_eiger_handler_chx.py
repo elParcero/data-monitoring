@@ -12,12 +12,12 @@ from databroker.assets.handlers import AreaDetectorTiffHandler
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import matplotlib.ticker as ticker
+
 
 def file_sizes(hdrs, db, detector):
     unique_resources = set()
     time_size = dict()
-    FILESTORE_KEY = "FILESTORE:"
+    # FILESTORE_KEY = "FILESTORE:"
     start_time = time.time()
     timestamp = 0.0
     for hdr in hdrs:
@@ -34,6 +34,7 @@ def file_sizes(hdrs, db, detector):
                                 if not val:
                                     # get the datum
                                     if key in event['data']:
+                                        # checking for three detectors, not all
                                         if key == detector:
                                             print('{} = {}'.format(key, detector))
                                             datum_id = event['data'][key]
@@ -80,6 +81,37 @@ def get_file_size(file_list):
     return sum(sizes)
 
 
+def create_dfs(fPath, files):
+    dfs = []
+    for file in files:
+        df = pd.read_csv(fPath + '/' + file, sep=',')
+        df.index = pd.to_datetime(df.pop('timestamp'))
+        dfs.append(df)
+    return dfs
+
+
+def plot_file_usage(dfs):
+    plt.ion()
+    plt.clf()
+
+    for df in dfs:
+        col_name = df.columns.values[0]
+        df = df.resample('H').sum()
+        df = df.cumsum()
+
+        fig, ax = plt.subplots()
+        plt.bar(df.index, df[col_name] * 1e-9, width=0.6, color='navy')
+        fig.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
+        ax.set_title(col_name.replace('(fileusage)', '').upper())
+        ax.set_xlabel('Hourly')
+        ax.set_ylabel('File Usage (GB)')
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+        ax.xaxis.set_minor_locator(mdates.DayLocator())
+        plt.show()
+        plt.savefig('{}.png'.format(col_name.replace('(fileusage)', '').replace(':', '_')))
+
+
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
@@ -87,42 +119,23 @@ db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 plan_names = ['count', 'scan', 'rel_scan']
-detector_names = ['eiger1m_single_image','eiger4m_single_image','xray_eye2_image']
+detector_names = ['eiger1m_single_image', 'eiger4m_single_image', 'xray_eye2_image']
+
 '''
+This commented code, retrieved the file size for
+plan name and detector, we saved it to a csv file using ipython
+we will leave this here as proof of how we got the file sizes
+
 det_size = dict()
-#hdrs = iter(db(since='2018-04-27', until='2018-12-31', plan_name=plan_names[0]))
 for plan in plan_names:
     for detector in detector_names:
         hdrs = iter(db(since='2015-01-01', until='2018-12-31', plan_name=plan))
         det_size['{}:{}'.format(plan, detector)] = file_sizes(hdrs, db, detector)
 '''
-file_path = '/home/jdiaz/src/data-monitoring/exercises/plan_detector/'
-files = os.listdir(file_path)
-dfs = []
-for file in files:
-    df = pd.read_csv(file_path + file, sep=",")
-    df.index = df.pop('timestamp')
-    dfs.append(df)
 
-def plot_usage(dfs):
-    plt.ion()
-
-    for df in dfs:
-        col_name = df.columns.values[0] 
-        fig, ax = plt.subplots()
-        plt.bar(df.index, df[col_name] * 1e-9, width=7,
-                label=col_name.upper(), color='navy')
-        #plt.plot(dat.index, dat[col_name] * 1e-9,
-        #         label=col_name.upper(), color='navy')
-        ax.set_xlabel('Time (daily)')
-        ax.set_ylabel('Usage (GB)')
-        ax.set_title(col_name)
-        fig.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
-        ax.xaxis.set_major_locator(mdates.MonthLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        plt.show()
-        plt.legend(loc=2)
+file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
+files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 
 
-plot_usage(dfs)
+dfs = create_dfs(file_path, files)
+plot_file_usage(dfs)
