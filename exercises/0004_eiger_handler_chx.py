@@ -12,6 +12,7 @@ from databroker.assets.handlers import AreaDetectorTiffHandler
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 
 
 def file_sizes(hdrs, db, detector):
@@ -109,8 +110,27 @@ def plot_file_usage(dfs):
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
         ax.xaxis.set_minor_locator(mdates.DayLocator())
         plt.show()
-        plt.savefig('{}.png'.format(col_name.replace('(fileusage)', '').replace(':', '_')))
+        # plt.savefig('{}.png'.format(col_name.replace('(fileusage)', '').replace(':', '_')))
 
+
+def plot_hourly_sum(dfs):
+    plt.ion()
+    plt.clf()
+    labels = range(24)
+
+    for df in dfs:
+        col_name = df.columns.values[0]
+        df = df.resample('H').sum()
+        df = df.groupby(df.index.hour).sum()
+
+        fig, ax = plt.subplots()
+        plt.bar(df.index, df[col_name] * 1e-9, width=0.6, color='navy')
+        ax.set_title(col_name.replace('(fileusage)', '').upper())
+        ax.set_xlabel('Hourly')
+        ax.set_ylabel('File Usage (GB)')
+        ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
+        plt.show()
+        # plt.savefig('bar_{}.png'.format(col_name.replace('(fileusage)', '').replace(':', '_')))
 
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
@@ -139,3 +159,4 @@ files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 
 dfs = create_dfs(file_path, files)
 plot_file_usage(dfs)
+plot_hourly_sum(dfs)
