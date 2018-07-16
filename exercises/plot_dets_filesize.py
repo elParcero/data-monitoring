@@ -35,20 +35,31 @@ def find_keys(hdrs, db):
                         if "filled" in event:
                             # there are keys that may not be filled
                             for key, val in event['filled'].items():
-                                if key not in keys_dict and not val:
+                                if not val:
                                     # get the datum
                                     if key in event['data']:
                                         datum_id = event['data'][key]
-                                        resource = db.reg.resource_given_datum_id(datum_id)
+                                        try:
+                                            resource = db.reg.resource_given_datum_id(datum_id)
+                                        except:
+                                            print('No datum found for resource: {}'.format(datum_id))
                                         resource_id = resource['uid']
-                                        keys_dict[key] = resource['spec']
                                         datum_gen = db.reg.datum_gen_given_resource(resource)
-                                        datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
-                                        fh = db.reg.get_spec_handler(resource_id)
-                                        file_lists = fh.get_file_list(datum_kwargs_list)
-                                        file_sizes = get_file_size(file_lists)
-                                        files.append(file_sizes)
-                                        print(key)
+                                        try:
+                                            datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+                                        except TypeError:
+                                            print('type error for resource: {}'.format(resource))
+                                        try:
+                                            fh = db.reg.get_spec_handler(resource_id)
+                                        except OSError:
+                                            print('OS error for resource: {}'.format(resource))
+                                        try:
+                                            file_lists = fh.get_file_list(datum_kwargs_list)
+                                            file_sizes = get_file_size(file_lists)
+                                        except KeyError:
+                                            print('key error for datum datum kwargs: {}'.format(datum_kwargs_list))
+                                        keys_dict[key] = keys_dict[key] + file_sizes
+                                        print('{} : {}'.format(key, file_sizes))
                     except StopIteration:
                         break
                     except KeyError:
@@ -118,5 +129,5 @@ df = pd.DataFrame.from_dict(keys_dict, orient='index')
 df.index.name = 'detector'
 df.columns = ['file_size_usage']
 
-plot_det_filesize(df)
+#plot_det_filesize(df)
 #df.to_csv('chx_detectors_filesize.dat', sep=' ')
