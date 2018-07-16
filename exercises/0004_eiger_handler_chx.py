@@ -21,6 +21,7 @@ def file_sizes(hdrs, db, detector):
     # FILESTORE_KEY = "FILESTORE:"
     start_time = time.time()
     timestamp = 0.0
+
     for hdr in hdrs:
         for stream_name in hdr.stream_names:
             events = hdr.events(stream_name=stream_name)
@@ -35,7 +36,7 @@ def file_sizes(hdrs, db, detector):
                                 if not val:
                                     # get the datum
                                     if key in event['data']:
-                                        # checking for three detectors, not all
+                                        # checking to see if desired detector matches key
                                         if key == detector:
                                             print('{} = {}'.format(key, detector))
                                             datum_id = event['data'][key]
@@ -131,6 +132,7 @@ def plot_hourly_sum(dfs):
         ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
         plt.show()
         # plt.savefig('bar_{}.png'.format(col_name.replace('(fileusage)', '').replace(':', '_')))
+
 
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
