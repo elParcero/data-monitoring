@@ -18,9 +18,15 @@ def plot_autocorrelation(dfs):
     plt.clf()
     for df in dfs:
         col_name = df.columns.values[0].replace('(fileusage)','')
-        plot_acf(df, title=col_name.upper())
-        plt.show()
-        plt.savefig('acf_{}'.format(col_name))
+        if len(df.index) > 50:
+            plot_acf(df, lags=50, title=col_name.upper())
+            plt.show()
+            plt.savefig('acf_{}'.format(col_name))
+        else:
+            plot_acf(df, title=col_name.upper())
+            plt.show()
+            plt.savefig('acf_{}'.format(col_name.replace(':', '_')))
+
 
 file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
 files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
