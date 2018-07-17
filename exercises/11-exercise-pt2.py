@@ -1,9 +1,8 @@
 '''
-0000_chx_filesize.py
-
 Author: Jorge Diaz
-Reading in File Sizes and plotting statistics
-xf11id-ws2_file_sizes
+Reading in File Sizes and plotting statistics Pt. 2
+
+xf28id2-ws2_file_sizes
 '''
 from datetime import datetime
 import pandas as pd
@@ -62,7 +61,7 @@ def create_df(date_size):
     return dfs
 
 
-file_path = '/home/jdiaz/projects/data-monitoring/data/xf11id-ws2_file_sizes'
+file_path = '/home/jdiaz/projects/data-monitoring/data/xf28id2-ws2_file_sizes'
 file_names = os.listdir(file_path)
 print(file_names)
 
@@ -70,8 +69,8 @@ print(file_names)
 # key = date, value = file size
 date_size = readin_file(file_path, file_names)
 
-# now create a dataframe object for each
-# file which will be held in a list (dfs)
+# now create a dataframe object for each file
+# which will be held in a list (dfs)
 dfs = create_df(date_size)
 
 
@@ -81,20 +80,19 @@ def plot_usage_versus_day(dfs, file_path, file_names):
         title_1 = basename(file_path).split('-', 1)[0].upper()
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_d.html')
-        p = figure(plot_width=1000, plot_height=700, x_axis_type='datetime')
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
-        x_vals = dfs[i].index.tolist()          # timestamp
+        x_vals = dfs[i].index.tolist()        # timestamp
         y_vals = list(dfs[i].iloc[:, 0] * 1e-9)  # file size
 
         p.vbar(x=x_vals, top=y_vals, width=1, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
-        p.add_layout(Title(text="Time (days)", align='center',
-                           text_font_size="17px"), 'below')
-        p.add_layout(Title(text='File Size (GB)', align='center',
-                           text_font_size="17px"), 'left')
-        p.add_layout(Title(text=title_1 + ' : ' + title_2, align='center',
-                           text_font_size="20px"), 'above')
+        p.add_layout(Title(text="Time (days)", align='center'), 'below')
+        p.add_layout(Title(text='File Size', align='center'), 'left')
         show(p)
 
 
@@ -105,20 +103,19 @@ def plot_usage_versus_week(dfs, file_path, file_names):
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_w.html')
         newdf = dfs[i].resample('W').sum()
-        p = figure(plot_width=1000, plot_height=700, x_axis_type='datetime')
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
-        x_vals = newdf.index.tolist()          # timestamp
+        x_vals = newdf.index.tolist()  # timestamp
         y_vals = list(newdf.iloc[:, 0] * 1e-9)  # usage
 
         p.vbar(x=x_vals, top=y_vals, width=70, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
-        p.add_layout(Title(text="Time (weeks)", align='center',
-                           text_font_size="17px"), 'below')
-        p.add_layout(Title(text='File Size (GB)', align='center',
-                           text_font_size="17px"), 'left')
-        p.add_layout(Title(text=title_1 + ' : ' + title_2, align='center',
-                           text_font_size="20px"), 'above')
+        p.add_layout(Title(text="Time (weeks)", align='center'), 'below')
+        p.add_layout(Title(text='File Size', align='center'), 'left')
         show(p)
 
 
@@ -129,20 +126,19 @@ def plot_usage_versus_month(dfs, file_path, file_names):
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_m.html')
         newdf = dfs[i].resample('M').sum()
-        p = figure(plot_width=1000, plot_height=700, x_axis_type='datetime')
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
-        x_vals = newdf.index.tolist()          # timestamp
+        x_vals = newdf.index.tolist()  # timestamp
         y_vals = list(newdf.iloc[:, 0] * 1e-9)  # usage
 
         p.vbar(x=x_vals, top=y_vals, width=30, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
-        p.add_layout(Title(text="Time (months)", align='center',
-                           text_font_size="17px"), 'below')
-        p.add_layout(Title(text='File Size (GB)', align='center',
-                           text_font_size="17px"), 'left')
-        p.add_layout(Title(text=title_1 + ' : ' + title_2, align='center',
-                           text_font_size="20px"), 'above')
+        p.add_layout(Title(text="Time (months)", align='center'), 'below')
+        p.add_layout(Title(text='File Size', align='center'), 'left')
         show(p)
 
 
