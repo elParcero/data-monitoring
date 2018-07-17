@@ -1,6 +1,7 @@
-#0004
+# 0004
 import os
 import numpy as np
+
 
 class AreaDetectorTiffHandler():
     specs = {'AD_TIFF'}
@@ -32,17 +33,19 @@ class AreaDetectorTiffHandler():
             ret.extend(self._fnames_for_point(**d_kw))
         return ret
 
+
 def get_file_size(file_list):
     sizes = []
     for file in file_list:
         sizes.append(os.path.getsize(file))
     return sum(sizes)
 
+
 resource_path = '/data/chx/tiff'
-resource_kwargs = {'template': '%s%s_%6.6d.tiff', 
-                   'filename': '6ef23c84-d8d5-4157-a0ee', 
+resource_kwargs = {'template': '%s%s_%6.6d.tiff',
+                   'filename': '6ef23c84-d8d5-4157-a0ee',
                    'frame_per_point': 1}
-datum_kwargs = {'point_number' : 0}
+datum_kwargs = {'point_number': 0}
 
 fh = AreaDetectorTiffHandler(resource_path, **resource_kwargs)
 
