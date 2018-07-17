@@ -38,7 +38,7 @@ class NumpySeqHandler:
 
     def get_file_list(self, datum_kwarg_gen):
         #This method is optional. It is not needed for access, but for export.
-        return ['{name}_{index}.npy'.format(name=self._name, **kwargs['index']) #**kwargs
+        return ['{name}_{index}.npy'.format(name=self._name, index=kwargs['index']) #**kwargs
                 for kwargs in datum_kwarg_gen]
 
 
@@ -70,7 +70,6 @@ for i in range(len(events)):
     datum_ids.append(events[i]['data']['img'])
 
 resources = list()
-#resources = set()
 # call these functions to get the resource 
 # and store them in a resources list 
 for i in range(len(datum_ids)):
