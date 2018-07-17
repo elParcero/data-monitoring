@@ -23,21 +23,21 @@ def readin_file(file_path, file_names):
     RETURNS: the two lists, date and file_size
     '''
     index = 0
-    date = []
     file_size = []
     date_size = dict()
     date_format = "%Y-%m-%d"
 
     for i in range(len(file_names)):
-        with open(file_path + '/' +file_names[i]) as file:
+        with open(file_path + '/' + file_names[i]) as file:
             for line in file:
                 if index == 0:
                     index += 1
                     continue
                 else:
                     key_val = line.split(" ")
-                    datetime_obj = datetime.strptime(key_val[0].strip(), date_format)
-                    date_size[datetime_obj] = float(key_val[1]) 
+                    datetime_obj = \
+                        datetime.strptime(key_val[0].strip(), date_format)
+                    date_size[datetime_obj] = float(key_val[1])
         file_size.append(date_size)
         date_size = {}
         index = 0
@@ -46,7 +46,7 @@ def readin_file(file_path, file_names):
 
 def create_df(date_size):
     '''
-    receives a dictionary as argument, 
+    receives a dictionary as argument,
     creates a dataframe for each file
     indices are datetime objects, file_size column contains file size
     for each corresponding date
@@ -54,7 +54,9 @@ def create_df(date_size):
     '''
     dfs = []
     for index in range(len(date_size)):
-        df = pd.DataFrame(pd.Series(date_size[index]), index= pd.DatetimeIndex(date_size[index].keys()), columns = ['file_size'])
+        df = pd.DataFrame(pd.Series(date_size[index]),
+                          index=pd.DatetimeIndex(date_size[index].keys()),
+                          columns=['file_size'])
         dfs.append(df)
     return dfs
 
@@ -63,25 +65,30 @@ file_path = '/home/jdiaz/projects/data-monitoring/data/xf28id2-ws2_file_sizes'
 file_names = os.listdir(file_path)
 print(file_names)
 
-#list that holds dictionary for each file read in >> key = date, value = file size
+# list that holds dictionary for each file read in >>
+# key = date, value = file size
 date_size = readin_file(file_path, file_names)
 
-#now create a dataframe object for each file which will be held in a list (dfs)
+# now create a dataframe object for each file
+# which will be held in a list (dfs)
 dfs = create_df(date_size)
 
 
 def plot_usage_versus_day(dfs, file_path, file_names):
     for i in range(len(dfs)):
 
-        title_1 = basename(file_path).split('-',1)[0].upper()
+        title_1 = basename(file_path).split('-', 1)[0].upper()
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_d.html')
-        p = figure(plot_width = 1000, plot_height = 700, x_axis_type='datetime', title= title_1 + ' | DETECTOR : ' + title_2)
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
         x_vals = dfs[i].index.tolist()        # timestamp
-        y_vals = list(dfs[i].iloc[:,0]* 1e-9) # file size 
+        y_vals = list(dfs[i].iloc[:, 0] * 1e-9)  # file size
 
-        p.vbar(x = x_vals, top = y_vals, width = 1, color = "#e6550d")
+        p.vbar(x=x_vals, top=y_vals, width=1, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
         p.add_layout(Title(text="Time (days)", align='center'), 'below')
@@ -91,18 +98,20 @@ def plot_usage_versus_day(dfs, file_path, file_names):
 
 def plot_usage_versus_week(dfs, file_path, file_names):
     for i in range(len(dfs)):
-        
-        title_1 = basename(file_path).split('-',1)[0].upper()
+
+        title_1 = basename(file_path).split('-', 1)[0].upper()
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_w.html')
         newdf = dfs[i].resample('W').sum()
-        p = figure(plot_width = 1000, plot_height = 700, x_axis_type='datetime', title= title_1 + ' | DETECTOR : ' + title_2)
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
+        x_vals = newdf.index.tolist()  # timestamp
+        y_vals = list(newdf.iloc[:, 0] * 1e-9)  # usage
 
-        x_vals = newdf.index.tolist()  #timestamp
-        y_vals = list(newdf.iloc[:,0] * 1e-9) #usage
-
-        p.vbar(x = x_vals, top = y_vals, width = 70, color = "#e6550d")
+        p.vbar(x=x_vals, top=y_vals, width=70, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
         p.add_layout(Title(text="Time (weeks)", align='center'), 'below')
@@ -112,18 +121,20 @@ def plot_usage_versus_week(dfs, file_path, file_names):
 
 def plot_usage_versus_month(dfs, file_path, file_names):
     for i in range(len(dfs)):
-        
-        title_1 = basename(file_path).split('-',1)[0].upper()
+
+        title_1 = basename(file_path).split('-', 1)[0].upper()
         title_2 = file_names[i].replace(".dat", "").upper()
         output_file('test' + str(i+1) + '_m.html')
         newdf = dfs[i].resample('M').sum()
-        p = figure(plot_width = 1000, plot_height = 700, x_axis_type='datetime', title= title_1 + ' | DETECTOR : ' + title_2)
+        p = figure(plot_width=1000,
+                   plot_height=700,
+                   x_axis_type='datetime',
+                   title=title_1 + ' | DETECTOR : ' + title_2)
 
+        x_vals = newdf.index.tolist()  # timestamp
+        y_vals = list(newdf.iloc[:, 0] * 1e-9)  # usage
 
-        x_vals = newdf.index.tolist()  #timestamp
-        y_vals = list(newdf.iloc[:,0] * 1e-9) #usage
-
-        p.vbar(x = x_vals, top = y_vals, width = 30, color = "#e6550d")
+        p.vbar(x=x_vals, top=y_vals, width=30, color="#e6550d")
         p.xgrid.grid_line_color = None
         p.y_range.start = 0
         p.add_layout(Title(text="Time (months)", align='center'), 'below')
