@@ -75,6 +75,17 @@ def get_file_size(file_list):
     return sum(sizes)
 
 
+def make_dfs(file_sizes):
+    dfs = dict()
+    for key in file_sizes:
+        if file_sizes[key]:
+            df = pd.DataFrame.from_dict(file_sizes[key], orient='index')
+            df.index.name = 'timestamp'
+            df.columns = [key + "(file_size)"]
+            dfs[key] = df
+    return dfs
+
+
 db = Broker.named("chx")
 db.reg.register_handler("AD_EIGER", EigerHandler)
 db.reg.register_handler("AD_EIGER2", EigerHandler)
@@ -92,18 +103,6 @@ for plan in plan_names:
 f_sizes = dict()
 for key in hdrs:
     f_sizes[key] = file_sizes(hdrs[key], db)
-
-
-def make_dfs(file_sizes):
-    dfs = dict()
-    for key in file_sizes:
-        if file_sizes[key]:
-            df = pd.DataFrame.from_dict(file_sizes[key], orient='index')
-            df.index.name = 'timestamp'
-            df.columns = [key + "(file_size)"]
-            dfs[key] = df
-    return dfs
-
 
 # dictionary where key = plan name & value = dataframe
 dfs = make_dfs(f_sizes)
