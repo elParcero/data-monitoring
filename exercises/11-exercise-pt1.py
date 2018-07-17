@@ -60,7 +60,9 @@ def create_df(date_size):
     return dfs
 
 
-file_path = '/home/jdiaz/projects/data-monitoring/data/xf23id-ws3_file_sizes'
+root_path = '/home/jdiaz/projects/'
+resource = 'data-monitoring/data/beamline_file_sizes/xf23id-ws3_file_sizes'
+file_path = root_path + resource
 file_names = os.listdir(file_path)
 print(file_names)
 
