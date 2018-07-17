@@ -38,7 +38,7 @@ def plot_file_usage(dfs):
 
 
 file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
-files = os.listdir(file_path)
+files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 
 dfs = create_dfs(file_path, files)
 plot_file_usage(dfs)
