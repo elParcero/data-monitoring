@@ -1,3 +1,7 @@
+'''
+Author: Jorge Diaz Jr
+Plots histogram for CHX plans + detectors
+'''
 import os
 from skbeam.core.accumulators.histogram import Histogram
 import matplotlib.pyplot as plt
@@ -32,9 +36,6 @@ def histogram_plot(dfs):
         ax.set_title('CHX | Plan:Detector')
         plt.plot(h.centers[0] *1e-6, h.values, label=col_name)
     plt.legend()
-
-
-
 
 
 
