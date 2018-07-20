@@ -26,11 +26,14 @@ def plot_autocorrelation(dfs):
         cc = np.correlate(df, df, 'full')
         norm = np.ones_like(df)
         ccn = np.correlate(norm, norm, 'full')
+        ax.set_xlabel('Hours')
+        ax.set_ylabel('Correlation')
         ax.set_title(col_name.replace(':','_').upper())
         plt.plot(np.fft.fftshift(cc/ccn))
+        plt.xlim(xmax=len(df))
         plt.show()
-        print(col_name.replace(':','_').replace('(fileusage)',''))
-        plt.savefig('chx_{}'.format(col_name.replace(':','_').replace('(fileusage)','')))
+        print(col_name.replace(':','_').replace('(file_size)',''))
+        #plt.savefig('chx_v2_{}'.format(col_name.replace(':','_').replace('(file_size)','')))
 
 
 file_path = '/home/jdiaz/projects/data-monitoring/exercises/plan_plots'
