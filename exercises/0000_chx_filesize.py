@@ -28,9 +28,9 @@ def readin_file(file_path, file_names):
     date_size = dict()
     date_format = "%Y-%m-%d"
 
-    for i in range(len(file_names)):
-        with open(file_path + '/' + file_names[i]) as file:
-            for line in file:
+    for file in file_names:
+        with open(file_path + '/' + file) as f:
+            for line in f:
                 if index == 0:
                     index += 1
                     continue
@@ -54,15 +54,15 @@ def create_df(date_size):
     returns a list of dataframes (each file gets a dataframe)
     '''
     dfs = []
-    for index in range(len(date_size)):
-        df = pd.DataFrame(pd.Series(date_size[index]),
-                          index=pd.DatetimeIndex(date_size[index].keys()),
-                          columns=['file_size'])
+    for fsize in date_size:
+        df = pd.DataFrame.from_dict(fsize, orient='index')
+        df.columns = ['file_size']
+        df.index.name = 'timestamp'
         dfs.append(df)
     return dfs
 
 
-file_path = '/home/jdiaz/projects/data-monitoring/data/xf11id-ws2_file_sizes'
+file_path = '/home/jdiaz/beamline_plotting/beamline_file_sizes_v2/xf11id-ws2_file_sizes'
 file_names = os.listdir(file_path)
 print(file_names)
 
