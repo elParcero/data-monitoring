@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 
 plt.ion()
-plt.clf()
 
 def create_dfs(file_path, files):
     dfs = []
@@ -24,9 +23,8 @@ def histogram_plot(dfs):
     min_size = 0
     max_size = 1e9 # 10 GB here
     Nbins = 10000
-    fig, ax = plt.subplots()
-    x_range = np.linspace(0,1e-6, 10000)
     for df in dfs:
+        fig, ax = plt.subplots()
         h = Histogram((Nbins, min_size, max_size))
         col_name = df.columns.values[0]
         col = np.array(df[col_name])
@@ -35,7 +33,9 @@ def histogram_plot(dfs):
         ax.set_ylabel('FREQUENCY')
         ax.set_title('CHX | Plan:Detector')
         plt.plot(h.centers[0] *1e-6, h.values, label=col_name)
-    plt.legend()
+        plt.legend(loc=1)
+        print(col_name.replace(':','_').replace('(fileusage)',''))
+        plt.savefig('chx_{}'.format(col_name.replace(':','_').replace('(fileusage)','')))
 
 
 
@@ -45,9 +45,3 @@ files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 dfs = create_dfs(file_path, files)
 histogram_plot(dfs)
 
-# at each iteration for a file size fill histogram
-#h.fill(file_size)
-
-#to plot histogram values
-#plt.plot(h.centers, h.values)
-# the bin centers 
