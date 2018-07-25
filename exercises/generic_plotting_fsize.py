@@ -116,7 +116,7 @@ file_readin = readin_file(root_path, files)
 #lot_w_resample(file_readin, resample='W')
 #plot_w_resample(file_readin, resample='M')
 
-#plot_file_rate(file_readin)
+plot_file_rate(file_readin)
 
 def plot_histogram(file_readin):
 
@@ -137,4 +137,4 @@ def plot_histogram(file_readin):
 
 
 
-plot_histogram(file_readin)
+# plot_histogram(file_readin)
