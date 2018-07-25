@@ -11,7 +11,7 @@ from eiger_io.fs_handler import EigerHandler
 from databroker.assets.handlers import AreaDetectorTiffHandler
 
 from pymongo.errors import CursorNotFound
-
+from collections import defaultdict
 
 def find_keys(db, since, until):
     '''
@@ -19,7 +19,9 @@ def find_keys(db, since, until):
         database, and gathers the SPEC id's from them.
     '''
     FILESTORE_KEY = "FILESTORE:"
-    keys_dict = dict()
+    #keys_dict = dict()
+    keys_dict = defaultdict(lambda : int (0))
+    used_resources = set()
 
     files = []
 
@@ -28,6 +30,50 @@ def find_keys(db, since, until):
     while True:
         try:
             hdr = next(hdrs)  
+            for stream_name in hdr.stream_names:
+                events = hdr.events(stream_name=stream_name)
+                events = iter(events)
+                while True:
+                    try:
+                        event = next(events)
+                        if "filled" in event:
+                            # there are keys that may not be filled
+                            for key, val in event['filled'].items():
+                                if not val:
+                                    # get the datum
+                                    if key in event['data']:
+                                        datum_id = event['data'][key]
+                                        try:
+                                            resource = db.reg.resource_given_datum_id(datum_id)
+                                        except:
+                                            print('No datum found for resource: {}'.format(datum_id))
+                                        resource_id = resource['uid']
+                                        if resource_id in used_resources:
+                                            continue
+                                        else:
+                                            used_resources.add(resource_id)
+                                            datum_gen = db.reg.datum_gen_given_resource(resource)
+                                            try:
+                                                datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+                                            except TypeError:
+                                                print('type error for resource: {}'.format(resource))
+                                                continue
+                                            try:
+                                                fh = db.reg.get_spec_handler(resource_id)
+                                            except OSError:
+                                                print('OS error for resource: {}'.format(resource))
+                                            #try:
+                                            file_lists = fh.get_file_list(datum_kwargs_list)
+                                            file_sizes = get_file_size(file_lists)
+                                            #except KeyError:
+                                            #print('key error for datum datum kwargs: {}'.format(datum_kwargs_list))
+                                            keys_dict[key] = keys_dict[key] + file_sizes
+                                            print('{} : {}'.format(key, file_sizes))
+                    except StopIteration:
+                        break
+                    except KeyError:
+                        print('key error')
+                        continue
         except CursorNotFound:
             print('CursorNotFound = {}'.format(hdr))
             curr_time = hdr.start['time']+1
@@ -37,45 +83,6 @@ def find_keys(db, since, until):
             print("Restarting up to {new_time}".format(new_time=new_time))
         except StopIteration:
             break
-        for stream_name in hdr.stream_names:
-            events = hdr.events(stream_name=stream_name)
-            events = iter(events)
-            while True:
-                try:
-                    event = next(events)
-                    if "filled" in event:
-                        # there are keys that may not be filled
-                        for key, val in event['filled'].items():
-                            if not val:
-                                # get the datum
-                                if key in event['data']:
-                                    datum_id = event['data'][key]
-                                    try:
-                                        resource = db.reg.resource_given_datum_id(datum_id)
-                                    except:
-                                        print('No datum found for resource: {}'.format(datum_id))
-                                    resource_id = resource['uid']
-                                    datum_gen = db.reg.datum_gen_given_resource(resource)
-                                    try:
-                                        datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
-                                    except TypeError:
-                                        print('type error for resource: {}'.format(resource))
-                                        continue
-                                    try:
-                                        fh = db.reg.get_spec_handler(resource_id)
-                                    except OSError:
-                                        print('OS error for resource: {}'.format(resource))
-                                    #try:
-                                    file_lists = fh.get_file_list(datum_kwargs_list)
-                                    file_sizes = get_file_size(file_lists)
-                                    #except KeyError:
-                                    #print('key error for datum datum kwargs: {}'.format(datum_kwargs_list))
-                                    keys_dict[key] = keys_dict[key] + file_sizes
-                                    print('{} : {}'.format(key, file_sizes))
-                except StopIteration:
-                    break
-                except KeyError:
-                    continue
     return keys_dict
 
 
