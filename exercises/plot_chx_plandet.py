@@ -24,7 +24,6 @@ def create_dfs(file_path, files):
 
 def plot_matrix(dfs):
     plt.ion()
-    plt.clf()
     i = 1
     fig, axs = plt.subplots(2,2, sharex=True)
     plans = ['count','rel_scan']#,'scan']
@@ -35,19 +34,21 @@ def plot_matrix(dfs):
             ax = axs[i,j]
             df = dfs.get(plan, dict()).get(detector, None)
             if df is not None:
-                #df = df.resample('D').sum()
+                df = df.resample('D').sum()
                 #df =df.cumsum()
 
                 #print(df.cumsum())
                 col_name = df.columns[0]
-                ax.bar(df.index, df[col_name] * 1e-9, width=5)
-                #ax.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
+                ax.bar(df.index, (df[col_name] * 1e-9) / 24, width=5)
                 ax.xaxis.set_major_locator(mdates.YearLocator())
-                #ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
-                #ax.xaxis.set_minor_locator(mdates.DayLocator())
-                #ax.set_title(col_name)
-
-
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+                ax.xaxis.set_minor_locator(mdates.MonthLocator())
+                if(i == 0 and j == 0 or i == 1 and j == 0):
+                    ax.set_ylabel(col_name.split(':')[0] + ' - file rate (GB/HR)')
+                if(i == 0 and j == 0 or i == 0 and j == 1):
+                    ax.set_title(col_name.replace('(fileusage)','').split(':')[1])
+    plt.suptitle('CHX Plans + Detectors')
+    plt.title('Daily', position=(-.14,-0.30))
 
 def plot_dets(dfs):
     plt.ion()
