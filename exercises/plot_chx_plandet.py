@@ -7,31 +7,46 @@ import os
 import numpy as np
 
 from skbeam.core.accumulators.histogram import Histogram
+from collections import defaultdict
 
 def create_dfs(file_path, files):
-    dfs = []
+    dfs = defaultdict(dict)
+
     for file in files:
         df = pd.read_csv(file_path + '/' + file, sep=',')
         df.index = pd.to_datetime(df.pop('timestamp'))
-        dfs.append(df)
+        col_name = df.columns.values[0]
+        name,det = col_name.split(':',1)
+        det = det.replace('(fileusage)','')
+        print(name + ' '+det)
+        dfs[name][det] = df
     return dfs
 
 def plot_matrix(dfs):
     plt.ion()
     plt.clf()
     i = 1
-    fig, ax = plt.subplots()
-    for df in dfs:
-        
-        col_name = df.columns.values[0]
-        fig.add_subplot(3,3,i)
-        plt.bar(df.index, df[col_name] * 1e-9)
-        fig.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
-        ax.xaxis.set_major_locator(mdates.MonthLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
-        ax.xaxis.set_minor_locator(mdates.DayLocator())
-        i += 1
-    plt.show()
+    fig, axs = plt.subplots(2,2, sharex=True)
+    plans = ['count','rel_scan']#,'scan']
+    detectors = ['eiger1m_single_image', 'eiger4m_single_image']#, 'xray_eye2_image']
+
+    for i, plan in enumerate(plans):
+        for j, detector in enumerate(detectors):
+            ax = axs[i,j]
+            df = dfs.get(plan, dict()).get(detector, None)
+            if df is not None:
+                #df = df.resample('D').sum()
+                #df =df.cumsum()
+
+                #print(df.cumsum())
+                col_name = df.columns[0]
+                ax.bar(df.index, df[col_name] * 1e-9, width=5)
+                #ax.autofmt_xdate(bottom=0.2, rotation=57, ha='right')
+                ax.xaxis.set_major_locator(mdates.YearLocator())
+                #ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+                #ax.xaxis.set_minor_locator(mdates.DayLocator())
+                #ax.set_title(col_name)
+
 
 
 def plot_dets(dfs):
@@ -70,8 +85,8 @@ file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
 files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 dfs = create_dfs(file_path, files)
 
-#plot_matrix(dfs)
+plot_matrix(dfs)
 #plot_dets(dfs)
-plot_histogram(dfs)
+#plot_histogram(dfs)
 
 
