@@ -4,7 +4,9 @@ import matplotlib.ticker as ticker
 
 import pandas as pd
 import os
+import numpy as np
 
+from skbeam.core.accumulators.histogram import Histogram
 
 def create_dfs(file_path, files):
     dfs = []
@@ -31,17 +33,6 @@ def plot_matrix(dfs):
         i += 1
     plt.show()
 
-    '''
-    plt.subplot(337)
-    plt.bar(dfs[0].index, df[df.columns.values[0]] * 1e-9)
-    plt.subplot(338)
-    plt.bar(dfs[0].index, df[df.columns.values[0]] * 1e-9)
-    plt.subplot(339)
-    plt.bar(dfs[0].index, df[df.columns.values[0]] * 1e-9)
-    '''
-    plt.show()
-
-    #for df in dfs:
 
 def plot_dets(dfs):
     plt.ion()
@@ -60,10 +51,27 @@ def plot_dets(dfs):
         ax.set_title(col_name.replace('(fileusage)','').replace(':',': ').upper())
     plt.show()
 
+def plot_histogram(dfs):
+    min_size = 0
+    max_size = 1e10 # 10 GB here
+    Nbins = 10000
+
+    for df in dfs:
+        fig, ax = plt.subplots()
+        h = Histogram((Nbins, min_size, max_size))
+        col_name = df.columns.values[0]
+        col = np.array(df[col_name])
+        h.fill(col)
+        plt.plot(h.centers[0] * 1e-6, h.values, 'o')
+    plt.show()
+
 
 file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
 files = [file for file in os.listdir(file_path) if file.endswith('.dat')]
 dfs = create_dfs(file_path, files)
 
 #plot_matrix(dfs)
-plot_dets(dfs)
+#plot_dets(dfs)
+plot_histogram(dfs)
+
+
