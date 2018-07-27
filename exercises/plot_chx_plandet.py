@@ -71,13 +71,13 @@ def plot_dets(dfs):
 
 def plot_histogram(dfs):
     min_size = 0
-    max_size = 1e10 # 10 GB here
-    Nbins = 1000
+    max_size = 5e8 # 10 GB here
+    Nbins = 10000
     labels = [num for num in range(11000) if num % 2000 == 0]
     minor_labels = [num for num in range(11000) if num % 1000 == 0]
     minor_2_labels = [num for num in range(11000) if num % 500 == 0]
     #y_minor_labels = [num for num in range()]
-
+    x_labels = [i for i in range(10)]
     plt.ion()
     fig, axs = plt.subplots(2,2)
     plans = ['count','rel_scan']
@@ -92,22 +92,18 @@ def plot_histogram(dfs):
                 col_name = df.columns[0]
                 col = np.array(df[col_name])
                 h.fill(col)
-                ax.plot(h.centers[0] * 1e-6, h.values, color='darkgreen')
-                ymax = h.values.max() + 50
-                ax.set_xticks(labels)
-                ax.set_xticks(minor_labels, minor=True)
-                ax.set_xticks(minor_2_labels, minor=True)
-
-                if ymax > 1000:
-                    ax.set_yticks([num for num in range(int(ymax)) if num % 100 == 0], minor=True)
-                else:
-                    ax.set_yticks([num for num in range(int(ymax)) if num % 25 == 0], minor=True)
+                ax.semilogy(h.centers[0][1:] * 1e-9, h.values[1:], color='darkgreen')
+                ax.set_ylim(ymin=1.1)
+                ax.set_xlim(xmin=1e-7)
+                if i == 1 and j == 1:
+                    ax.set_ylim(ymax=10)
                 if(i == 0 and j == 0 or i == 1 and j == 0):
-                    ax.set_ylabel(col_name.split(':')[0] + ' - Frequency')
+                    ax.set_ylabel(col_name.split(':')[0] + ' - # of occurences')
                 if(i == 0 and j == 0 or i == 0 and j == 1):
                     ax.set_title(col_name.replace('(fileusage)','').split(':')[1])
+                
     plt.suptitle('CHX Plans + Detectors')
-    plt.title('Histogram Plot', position=(-.14,-0.30))
+    plt.title('Histogram Semi-Log Plot', position=(-.14,-0.30))
 
 
 
@@ -117,6 +113,6 @@ dfs = create_dfs(file_path, files)
 
 #plot_matrix(dfs)
 #plot_dets(dfs)
-#plot_histogram(dfs)
+plot_histogram(dfs)
 
 
