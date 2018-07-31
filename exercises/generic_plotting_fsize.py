@@ -27,7 +27,6 @@ def readin_file(root_path, files):
 
 def plot_w_resample(file_readin, resample='H', cumulative=False, regroup=''):
     plt.ion()
-    plt.clf()
     labels = range(24)
     width = 0
     xlabel = ''
@@ -75,8 +74,7 @@ def plot_w_resample(file_readin, resample='H', cumulative=False, regroup=''):
 
 def plot_file_rate(file_readin):
     plt.ion()
-    plt.clf()
-    width = 0.7
+    width = 2
     for parent in file_readin:
         for df in file_readin[parent]:
             df = df.resample('D').sum()
@@ -97,6 +95,22 @@ def plot_file_rate(file_readin):
             ax.xaxis.set_minor_locator(mdates.DayLocator())
             plt.show()
 
+
+def plot_histogram(file_readin):
+
+    for parent in file_readin:
+        for df in file_readin[parent]:
+            col_name = df.columns.values[0]
+            fig, ax = plt.subplots()
+            hist, _ = np.histogram(df[col_name], bins=20)
+            plt.hist(hist) 
+            ax.set_title(col_name)
+            ax.set_xlabel('File Usage (GB)')
+            ax.set_ylabel('Frequency')
+            ax.set_yscale('log')
+            plt.show()
+
+
 root_path = '/home/jdiaz/projects/data-monitoring/exercises/file_sizes'
 parent_dirs = os.listdir(root_path)
 del parent_dirs[2]
@@ -116,25 +130,7 @@ file_readin = readin_file(root_path, files)
 #lot_w_resample(file_readin, resample='W')
 #plot_w_resample(file_readin, resample='M')
 
-plot_file_rate(file_readin)
-
-def plot_histogram(file_readin):
-
-    for parent in file_readin:
-        for df in file_readin[parent]:
-            col_name = df.columns.values[0]
-            fig, ax = plt.subplots()
-            rng = df[col_name].max() - df[col_name].min()
-            labels = [(i + 25) for i in range(int(rng))]
-            hist, _ = np.histogram(df[col_name], bins=10)
-            plt.hist(hist) 
-            ax.set_title(col_name)
-            ax.set_xlabel('File Usage (GB)')
-            ax.set_ylabel('Frequency')
-            ax.set_minor_locator(ticker.FixedLocator(labels))
-            plt.show()
-            break
+#plot_file_rate(file_readin)
 
 
-
-# plot_histogram(file_readin)
+plot_histogram(file_readin)
