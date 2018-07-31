@@ -15,11 +15,12 @@ def plot(df):
     col_name = df.columns.values[0]
 
     fig, ax = plt.subplots()
-    plt.bar(df.index, df[col_name] *1e-9)
+    ax.bar(df.index, df[col_name] *1e-9)
+    ax.set_yscale('log')
     ax.set_title('CHX Detectors')
     ax.set_xlabel('Detectors')
     ax.set_ylabel('File usgae (GB)')
-    fig.autofmt_xdate(bottom=0.5, rotation=57, ha='right')
+    fig.autofmt_xdate(bottom=0.35, rotation=57, ha='right')
     plt.show()
 
 
