@@ -179,6 +179,31 @@ def mplot_histogram_fileusage_semilog(dfs):
     plt.title('Histogram Semi-Log Plot', position=(-.14,-0.30))
 
 
+def mplot_hourly_sum(dfs):
+    plt.ion()
+    labels = [i for i in range(24) if i % 3 == 0]
+    fig, axs = plt.subplots(2,2, sharex=True)
+    plans = ['count','rel_scan']
+    detectors = ['eiger1m_single_image', 'eiger4m_single_image']
+
+    for i, plan in enumerate(plans):
+        for j, detector in enumerate(detectors):
+            ax = axs[i,j]
+            df = dfs.get(plan, dict()).get(detector, None)
+            if df is not None:
+                df = df.resample('H').sum()
+                df = df.groupby(df.index.hour).sum()
+                col_name = df.columns[0]
+                ax.bar(df.index, (df[col_name] * 1e-9))
+                ax.set_xticks(labels)
+                if(i == 0 and j == 0 or i == 1 and j == 0):
+                    ax.set_ylabel(col_name.split(':')[0] + ' - file usage (GB)')
+                if(i == 0 and j == 0 or i == 0 and j == 1):
+                    ax.set_title(col_name.replace('(fileusage)','').split(':')[1])
+    plt.suptitle('CHX Plans + Detectors')
+    plt.title('Hourly Sum (2015 - Jun 8, 2018)', position=(-.14,-0.30))
+
+
 def plot_cumulative(dfs):
     plt.ion()
     plans = ['count','rel_scan', 'scan']
@@ -295,17 +320,16 @@ def plot_histogram_fileusage_semilog(dfs):
 
 
 
-
-
 file_path_plan_det = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
 files = [file for file in os.listdir(file_path_plan_det) if file.endswith('.dat')]
 dfs = create_dfs(file_path_plan_det, files)
 
-#mplot_cumulative(dfs)
+mplot_cumulative(dfs)
 #mplot_file_rate(dfs)
 #mplot_file_rate_semilog(dfs)
 #mplot_histogram_fileusage(dfs)
 #mplot_histogram_fileusage_semilog(dfs)
+#mplot_hourly_sum(dfs)
 
 #plot_cumulative(dfs)
 #plot_file_rates(dfs)
