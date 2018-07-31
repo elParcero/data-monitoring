@@ -1,3 +1,10 @@
+'''
+Authored by Jorge Diaz Jr
+This program porduces matrix plots
+for CHX plans+detectors 
+- cumulative sum
+- histogram plots
+'''
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
