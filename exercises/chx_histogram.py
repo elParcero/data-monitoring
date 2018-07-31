@@ -19,7 +19,7 @@ def create_dfs(file_path, files):
     return dfs
 
 
-def histogram_plot(dfs):
+def histogram_plot(dfs, log_yscale=False):
     min_size = 0
     max_size = 1e9 # 10 GB here
     Nbins = 10000
@@ -32,6 +32,8 @@ def histogram_plot(dfs):
         ax.set_xlabel('FILE USAGE')
         ax.set_ylabel('FREQUENCY')
         ax.set_title('CHX | Plan:Detector')
+        if log_yscale:
+            ax.set_yscale('log')
         plt.plot(h.centers[0] *1e-6, h.values, label=col_name)
         plt.legend(loc=1)
         print(col_name.replace(':','_').replace('(fileusage)',''))
