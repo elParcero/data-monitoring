@@ -1,3 +1,8 @@
+'''
+Author: Jorge Diaz Jr
+This program does plotting for CHX file usage
+for both the scraped method and the databroker method
+'''
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
@@ -36,7 +41,12 @@ def plot_filesize(df):
     #plt.ylim(ymax=2000)
     plt.show()
 
-#file_path = '/home/jdiaz/projects/data-monitoring/exercises/chx_filesize.dat'
+
+# databroker method 
+# file_path = '/home/jdiaz/projects/data-monitoring/exercises/chx_filesize.dat'
+
+# scraped method
 file_path = '/home/jdiaz/beamline_plotting/beamline_file_sizes_v2/xf11id-ws2_file_sizes/data.dat'
+
 df = create_df(file_path)
 plot_filesize(df)
