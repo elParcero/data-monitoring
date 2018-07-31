@@ -1,3 +1,8 @@
+'''
+Author: Jorge Diaz Jr
+This program goes through the metadata for
+CHX beamline and extracts file usage
+'''
 from databroker import Broker
 import pandas as pd
 
