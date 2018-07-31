@@ -1,3 +1,6 @@
+'''
+Author: Jorge Diaz Jr
+'''
 from databroker import Broker
 import pandas as pd
 
@@ -19,7 +22,6 @@ def find_keys(db, since, until):
         database, and gathers the SPEC id's from them.
     '''
     FILESTORE_KEY = "FILESTORE:"
-    #keys_dict = dict()
     keys_dict = defaultdict(lambda : int (0))
     used_resources = set()
 
@@ -62,11 +64,8 @@ def find_keys(db, since, until):
                                                 fh = db.reg.get_spec_handler(resource_id)
                                             except OSError:
                                                 print('OS error for resource: {}'.format(resource))
-                                            #try:
                                             file_lists = fh.get_file_list(datum_kwargs_list)
                                             file_sizes = get_file_size(file_lists)
-                                            #except KeyError:
-                                            #print('key error for datum datum kwargs: {}'.format(datum_kwargs_list))
                                             keys_dict[key] = keys_dict[key] + file_sizes
                                             print('{} : {}'.format(key, file_sizes))
                     except StopIteration:
@@ -84,7 +83,6 @@ def find_keys(db, since, until):
         except StopIteration:
             break
     return keys_dict
-
 
 
 def get_file_size(file_list):
@@ -124,11 +122,9 @@ def plot_det_filesize(df):
 file_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors.dat'
 # chx_keys, _ = readin_file(file_path)
 
-
 f_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors_filesize.dat'
 #_, f_size = readin_file(f_path)
 #plot_det_filesize(f_size)
-
 
 
 db = Broker.named("chx")
@@ -152,5 +148,3 @@ df.columns = ['file_size_usage']
 #plot_det_filesize(df)
 #df.to_csv('chx_detectors_filesize.dat', sep=' ')
 '''
-
-
