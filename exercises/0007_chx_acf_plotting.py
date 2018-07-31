@@ -11,7 +11,10 @@ plt.ion()
 def create_dfs(file_path, files):
     dfs = []
     for file in files:
-        df = pd.read_csv(file_path + '/' + file, sep=' ')
+        if os.path.basename(file_path).endswith("dets_fsize"):
+            df = pd.read_csv(file_path + '/' + file, sep=',')
+        else:
+            df = pd.read_csv(file_path + '/' + file, sep=' ')
         df.index = pd.to_datetime(df.pop('timestamp'))
         dfs.append(df)
     return dfs
@@ -36,9 +39,10 @@ def plot_autocorrelation(dfs):
         #plt.savefig('chx_v2_{}'.format(col_name.replace(':','_').replace('(file_size)','')))
 
 
-file_path = '/home/jdiaz/projects/data-monitoring/exercises/plan_plots'
-#file_path = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
-files =[file for file in os.listdir(file_path) if file.endswith('.dat')]
+file_path_1 = '/home/jdiaz/projects/data-monitoring/exercises/plan_plots'
+file_path_2 = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
+files_1 =[file for file in os.listdir(file_path_1) if file.endswith('.dat')]
+files_2 =[file for file in os.listdir(file_path_2) if file.endswith('.dat')]
 
-dfs = create_dfs(file_path, files)
+dfs = create_dfs(file_path_2, files_2)
 plot_autocorrelation(dfs)
