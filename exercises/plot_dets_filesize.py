@@ -1,3 +1,6 @@
+'''
+Author: Jorge Diaz Jr
+'''
 from databroker import Broker
 import pandas as pd
 
@@ -11,21 +14,24 @@ from eiger_io.fs_handler import EigerHandler
 from databroker.assets.handlers import AreaDetectorTiffHandler
 
 from pymongo.errors import CursorNotFound
+from collections import defaultdict
 
-
-def find_keys(hdrs, db):
+def find_keys(db, since, until):
     '''
         This function searches for keys that are stored via filestore in a
         database, and gathers the SPEC id's from them.
     '''
     FILESTORE_KEY = "FILESTORE:"
-    keys_dict = dict()
+    keys_dict = defaultdict(lambda : int (0))
+    used_resources = set()
 
     files = []
 
-    hdr = iter(hdrs)
+    hdrs = db(since=since, until=until)
+    hdrs = iter(hdrs)
     while True:
         try:
+            hdr = next(hdrs)  
             for stream_name in hdr.stream_names:
                 events = hdr.events(stream_name=stream_name)
                 events = iter(events)
@@ -35,28 +41,48 @@ def find_keys(hdrs, db):
                         if "filled" in event:
                             # there are keys that may not be filled
                             for key, val in event['filled'].items():
-                                if key not in keys_dict and not val:
+                                if not val:
                                     # get the datum
                                     if key in event['data']:
                                         datum_id = event['data'][key]
-                                        resource = db.reg.resource_given_datum_id(datum_id)
+                                        try:
+                                            resource = db.reg.resource_given_datum_id(datum_id)
+                                        except:
+                                            print('No datum found for resource: {}'.format(datum_id))
                                         resource_id = resource['uid']
-                                        keys_dict[key] = resource['spec']
-                                        datum_gen = db.reg.datum_gen_given_resource(resource)
-                                        datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
-                                        fh = db.reg.get_spec_handler(resource_id)
-                                        file_lists = fh.get_file_list(datum_kwargs_list)
-                                        file_sizes = get_file_size(file_lists)
-                                        files.append(file_sizes)
-                                        print(key)
+                                        if resource_id in used_resources:
+                                            continue
+                                        else:
+                                            used_resources.add(resource_id)
+                                            datum_gen = db.reg.datum_gen_given_resource(resource)
+                                            try:
+                                                datum_kwargs_list = [datum['datum_kwargs'] for datum in datum_gen]
+                                            except TypeError:
+                                                print('type error for resource: {}'.format(resource))
+                                                continue
+                                            try:
+                                                fh = db.reg.get_spec_handler(resource_id)
+                                            except OSError:
+                                                print('OS error for resource: {}'.format(resource))
+                                            file_lists = fh.get_file_list(datum_kwargs_list)
+                                            file_sizes = get_file_size(file_lists)
+                                            keys_dict[key] = keys_dict[key] + file_sizes
+                                            print('{} : {}'.format(key, file_sizes))
                     except StopIteration:
                         break
                     except KeyError:
+                        print('key error')
                         continue
         except CursorNotFound:
             print('CursorNotFound = {}'.format(hdr))
-    return keys_dict, files
-
+            curr_time = hdr.start['time']+1
+            tstruct = time.strptime(time.ctime(curr_time), "%a %b %d %H:%M:%S %Y")
+            new_time = time.strftime("%Y-%m-%d %H:%M:%S", tstruct)
+            hdrs = iter(db(since=since, until=new_time))
+            print("Restarting up to {new_time}".format(new_time=new_time))
+        except StopIteration:
+            break
+    return keys_dict
 
 
 def get_file_size(file_list):
@@ -96,11 +122,9 @@ def plot_det_filesize(df):
 file_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors.dat'
 # chx_keys, _ = readin_file(file_path)
 
-
 f_path = '/home/jdiaz/src/data-monitoring/exercises/chx_detectors_filesize.dat'
 #_, f_size = readin_file(f_path)
 #plot_det_filesize(f_size)
-
 
 
 db = Broker.named("chx")
@@ -110,13 +134,17 @@ db.reg.register_handler("AD_EIGER_SLICE", EigerHandler)
 db.reg.register_handler("AD_TIFF", AreaDetectorTiffHandler)
 
 
-hdrs = db(since="2015-01-01", until="2017-01-01")
+#hdrs = db(since="2015-01-01", until="2018-12-31")
+since="2015-01-01"
+until="2018-12-31"
+#hdrs = [db['82dc7677-ed65-4ef7-a3a2-db3c72b12ea7']]
+keys_dict = find_keys(db, since=since, until=until)
 
-keys_dict = find_keys(hdrs, db)
-
+'''
 df = pd.DataFrame.from_dict(keys_dict, orient='index')
 df.index.name = 'detector'
 df.columns = ['file_size_usage']
 
-plot_det_filesize(df)
+#plot_det_filesize(df)
 #df.to_csv('chx_detectors_filesize.dat', sep=' ')
+'''
