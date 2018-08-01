@@ -16,6 +16,7 @@ Matrix plots
 
 '''
 from skbeam.core.accumulators.histogram import Histogram
+from statistics import mean
 
 import numpy as np
 import pandas as pd
@@ -29,13 +30,19 @@ def create_dfs(file_path, files):
     dfs = defaultdict(dict)
 
     for file in files:
-        df = pd.read_csv(file_path + '/' + file, sep=',')
-        df.index = pd.to_datetime(df.pop('timestamp'))
-        col_name = df.columns.values[0]
-        name,det = col_name.split(':',1)
-        det = det.replace('(fileusage)','')
-        print(name + ' '+det)
-        dfs[name][det] = df
+        print(file)
+        if file == "chx_filesize.dat":
+            df = pd.read_csv(file_path, sep=' ')
+            #df.index = pd.to_datetime(df.pop('timestamp'))
+            dfs['chx_filesize'] = df
+        else:
+            df = pd.read_csv(file_path + '/' + file, sep=',')
+            df.index = pd.to_datetime(df.pop('timestamp'))
+            col_name = df.columns.values[0]
+            name,det = col_name.split(':',1)
+            det = det.replace('(fileusage)','')
+            print(name + ' '+det)
+            dfs[name][det] = df
     return dfs
 
 
@@ -320,11 +327,12 @@ def plot_histogram_fileusage_semilog(dfs):
 
 
 
-file_path_plan_det = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
-files = [file for file in os.listdir(file_path_plan_det) if file.endswith('.dat')]
-dfs = create_dfs(file_path_plan_det, files)
 
-mplot_cumulative(dfs)
+#file_path_plan_det = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
+#files = [file for file in os.listdir(file_path_plan_det) if file.endswith('.dat')]
+#dfs = create_dfs(file_path_plan_det, files)
+
+#mplot_cumulative(dfs)
 #mplot_file_rate(dfs)
 #mplot_file_rate_semilog(dfs)
 #mplot_histogram_fileusage(dfs)
@@ -336,3 +344,10 @@ mplot_cumulative(dfs)
 #plot_file_rates_semilog(dfs)
 #plot_histogram_fileusage(dfs)
 #plot_histogram_fileusage_semilog(dfs)
+
+fpath_chx = '/home/jdiaz/projects/data-monitoring/exercises/file_sizes/chx_fileusage/chx_filesize.dat'
+files2 = [os.path.basename(fpath_chx)]
+dfs2 = create_dfs(fpath_chx, files2)
+
+
+
