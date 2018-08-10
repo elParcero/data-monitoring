@@ -1,6 +1,6 @@
-Welcome to data monitoring fun.
+# Welcome to data monitoring fun.
 
-Data monitoring is spectacular!
+## Data monitoring is spectacular!
 
 directory structure:
     examples/ : examples
