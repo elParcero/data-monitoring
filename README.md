@@ -2,7 +2,7 @@
 
 ## Data monitoring is spectacular!
 
-.. code-block:: 
+.. code-block :: 
 	directory structure:
     		data-monitoring/ : is code ready for packaging
     			data/ : some sample data
