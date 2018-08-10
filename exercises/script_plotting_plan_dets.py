@@ -8,6 +8,7 @@ from CHX beamline.
 The goal is to be able to have
 Matrix plots
     - cumulative sum plots
+    - hourly sum plots
     - file rate plots
     - file rate semi log
     - histogram file usage plots
@@ -145,7 +146,7 @@ def mplot_histogram_fileusage(dfs):
                 col_name = df.columns[0]
                 col = np.array(df[col_name])
                 h.fill(col)
-                ax.plot(h.centers[0][1:] * 1e-9, h.values[1:])
+                ax.plot(h.centers[0][1:] * 1e-9, h.values[1:], color='darkgreen')
                 if(i == 0 and j == 0 or i == 1 and j == 0):
                     ax.set_ylabel(col_name.split(':')[0] + ' - # of occurences')
                 if(i == 0 and j == 0 or i == 0 and j == 1):
@@ -199,6 +200,7 @@ def mplot_hourly_sum(dfs):
             df = dfs.get(plan, dict()).get(detector, None)
             if df is not None:
                 df = df.resample('H').sum()
+                df = df.loc[:'2018-06-09 01:00:00'] # data up to June 8, 2018
                 df = df.groupby(df.index.hour).sum()
                 col_name = df.columns[0]
                 ax.bar(df.index, (df[col_name] * 1e-9))
@@ -208,7 +210,7 @@ def mplot_hourly_sum(dfs):
                 if(i == 0 and j == 0 or i == 0 and j == 1):
                     ax.set_title(col_name.replace('(fileusage)','').split(':')[1])
     plt.suptitle('CHX Plans + Detectors')
-    plt.title('Hourly Sum (2015 - Jun 8, 2018)', position=(-.14,-0.30))
+    plt.title('Hourly Sum (Earliest experiment - Jun 8, 2018)', position=(-.14,-0.30))
 
 
 def plot_cumulative(dfs):
@@ -326,28 +328,48 @@ def plot_histogram_fileusage_semilog(dfs):
                 ax.set_title(col_name.replace('(fileusage)','').split(':')[1])
 
 
+def plot_hourly_sum(dfs):
+    plt.ion()
+    labels = range(24)
+    plans = ['count','rel_scan', 'scan']
+    detectors = ['eiger1m_single_image', 'eiger4m_single_image', 'xray_eye2_image']
+    for plan in (plans):
+        for detector in (detectors):
+            df = dfs.get(plan, dict()).get(detector, None)
+            if df is not None:
+                fig, ax = plt.subplots()
+                df = df.resample('H').sum()
+                df =df.groupby(df.index.hour).sum()
+                col_name = df.columns[0]
+                ax.bar(df.index, (df[col_name] * 1e-9))
+                ax.set_ylabel("File Usage (GB)")
+                ax.set_xlabel("Daily Cumulative Sum")
+                ax.set_title(col_name.replace(":",": ").replace("(fileusage)",""))
+                ax.set_xticks(labels)
 
 
-#file_path_plan_det = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
-#files = [file for file in os.listdir(file_path_plan_det) if file.endswith('.dat')]
-#dfs = create_dfs(file_path_plan_det, files)
+
+file_path_plan_det = '/home/jdiaz/projects/data-monitoring/exercises/plans_dets_fsize'
+files = [file for file in os.listdir(file_path_plan_det) if file.endswith('.dat')]
+dfs = create_dfs(file_path_plan_det, files)
 
 #mplot_cumulative(dfs)
 #mplot_file_rate(dfs)
 #mplot_file_rate_semilog(dfs)
 #mplot_histogram_fileusage(dfs)
 #mplot_histogram_fileusage_semilog(dfs)
-#mplot_hourly_sum(dfs)
+mplot_hourly_sum(dfs)
 
 #plot_cumulative(dfs)
 #plot_file_rates(dfs)
 #plot_file_rates_semilog(dfs)
 #plot_histogram_fileusage(dfs)
 #plot_histogram_fileusage_semilog(dfs)
+#plot_hourly_sum(dfs)
 
-fpath_chx = '/home/jdiaz/projects/data-monitoring/exercises/file_sizes/chx_fileusage/chx_filesize.dat'
-files2 = [os.path.basename(fpath_chx)]
-dfs2 = create_dfs(fpath_chx, files2)
+#fpath_chx = '/home/jdiaz/projects/data-monitoring/exercises/file_sizes/chx_fileusage/chx_filesize.dat'
+#files2 = [os.path.basename(fpath_chx)]
+#dfs2 = create_dfs(fpath_chx, files2)
 
 
 
